@@ -69,3 +69,9 @@ button{
 input{
     width: 20px;
 }
+.version_tracker{
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    opacity: 0.6;
+}

@@ -172,3 +172,9 @@ h1{
     font-weight: 650;
 
 }
+.version_tracker{
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    opacity: 0.6;
+}
