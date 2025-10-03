@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <title>mahlukat website day 5</title>
     <script src="https://d3js.org/d3.v5.min.js" defer></script>
-    <script src="app.js" defer></script>
+    <script type = "module" src="app.js" defer></script>
     <link rel = "stylesheet" type = "text/css" href = "simulation.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,7 +67,7 @@
 
     <div class = "slideContainer">
         <div class = "sliderWrap">
-            <input type= "range" min = "1" max = "1000" value = "10" id = "simulationSpeed" class = "slider">
+            <input type= "range" min = "1" max = "300" value = "10" id = "simulationSpeed" class = "slider">
             <div class = "sliderDescription">
             <p>Target simulation speed (ticks/s): <span id = "value"></span></p>
             </div>

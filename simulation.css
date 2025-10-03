@@ -105,7 +105,7 @@ rect{
   color: black;
 }
 .sliderWrap::after{
-  content: "1000";
+  content: "300";
   position: absolute;
   right: 0;
   top: 28px;
