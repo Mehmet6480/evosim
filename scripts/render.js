@@ -1,7 +1,16 @@
 // setting up chart
-export function renderSimulation(m, f) {
-  const width = 500;
-  const height = 500;
+const mahlukat_tooltip = d3.select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("display", "none")
+    .style("pointer-events", "none")
+    .style("z-index", "9999"); 
+
+
+export function renderSimulation(mahlukats, foods) {
+  const width = 420;
+  const height = 420;
   const margin = { top: 20, right: 20, bottom: 30, left: 40 };
 
   // scales
@@ -38,13 +47,54 @@ export function renderSimulation(m, f) {
     .join("g")
       .attr("class", "food");
 
-  foodGroup.selectAll("circle")
-    .data(f)
-    .join("circle")
-      .attr("r", 6)
-      .attr("cx", d => x(d.position_x))
-      .attr("cy", d => y(d.position_y));
+  const lineGroup = svg.selectAll("g.pursuit_lines")
+  .data([null])
+  .join("g")
+  .attr("class", "pursuit_lines");
 
+  foodGroup.selectAll("circle")
+    .data(foods)
+    .join("circle")
+      .attr("r", 5)
+      .attr("cx", d => x(d.position_x))
+      .attr("cy", d => y(d.position_y))
+      .style("cursor", "pointer") 
+      .on("mouseenter", function (event, d) {
+      // highlight ONLY the hovered circle
+      d3.select(this).attr("stroke", "#222").attr("stroke-width", 2);
+      // show the tooltip
+      mahlukat_tooltip.style("display", "block");
+
+      lineGroup.selectAll("line").remove();
+
+      if (foods[d].children && foods[d].children.length > 0){
+        lineGroup.selectAll("line")
+        .data(foods[d].children)
+        .join("line")
+        .attr("x1", x(foods[d].position_x))
+        .attr("y1", y(foods[d].position_y))
+        .attr("x2", d => x(d.position_x))
+        .attr("y2", d => y(d.position_y))
+        .attr("stroke", "#ee5555")
+        .attr("stroke-width", "1")
+        .style("stroke-opacity", "0.4");
+      }
+      })
+      .on("mousemove", function(event, d){
+        const [px, py] = d3.mouse(document.body);
+      mahlukat_tooltip
+      .style("left", (px+18) + "px")
+      .style("top", (py+18) + "px")
+      .html(`Food<br>X: ${foods[d].position_x.toFixed(2)}, Y: ${foods[d].position_y.toFixed(2)}<br>Pursuers: ${foods[d].children.length}`);
+      })
+      .on("mouseleave", function() {
+        d3.select(this)
+        .attr("stroke", null)
+        .attr("stroke-width", null);
+        lineGroup.selectAll("line").remove();
+        mahlukat_tooltip.style("display", "none");
+      
+      })
       // mahlukat layer: create-or-reuse the group, then join circles to data m
   const mahlGroup = svg.selectAll("g.mahlukat")
     .data([null])
@@ -52,13 +102,35 @@ export function renderSimulation(m, f) {
       .attr("class", "mahlukat");
 
   mahlGroup.selectAll("circle")
-    .data(m)
+    .data(mahlukats)
     .join("circle")
-      .attr("r", 6)
+      .attr("r", 5)
       .attr("cx", d => x(d.position_x))
-      .attr("cy", d => y(d.position_y));
-
+      .attr("cy", d => y(d.position_y))
+      .style("cursor", "pointer") 
+      .on("mouseenter", function (event, d) {
+      // highlight ONLY the hovered circle
+      d3.select(this).attr("stroke", "#222").attr("stroke-width", 2);
+      // show the tooltip
+      mahlukat_tooltip.style("display", "block");
+      })
+      .on("mousemove", function(event, d){
+        const [px, py] = d3.mouse(document.body);
+      mahlukat_tooltip
+      .style("left", (px+18) + "px")
+      .style("top", (py+18) + "px")
+      .html(`Mahlukat ${mahlukats[d].name != null ? mahlukats[d].name : 'no name'}<br>X: ${mahlukats[d].position_x.toFixed(2)}, Y: ${mahlukats[d].position_y.toFixed(2)}<br>Speed: ${mahlukats[d].speed.toFixed(3)}<br>${mahlukats[d].energy != null ? "Energy: " + mahlukats[d].energy.toFixed(2) : ""}<br>${mahlukats[d].days_alive != 0 ? "Days Alive: " + mahlukats[d].days_alive :  "DA: " +  mahlukats[d].days_alive}`);
+      })
+      .on("mouseleave", function() {
+        d3.select(this)
+        .attr("stroke", null)
+        .attr("stroke-width", null);
+        mahlukat_tooltip.style("display", "none");
+      
+      })
 }
+
+
 
 let focusIndex = null;
 let mouseInside = false;
@@ -68,15 +140,13 @@ const tooltip = d3.select("body")
     .style("position", "absolute")
     .style("pointer-events", "none");
 
-    
-export function renderGraph(data, container = "#speed_chart", title = "Average Speed vs Day"){
+
+export function renderGraph(data, container = "#speed_chart", title = "Average Speed vs Day", y_label = "Average Speed", x_label = "Day"){
     // set up dimensions
-    const vbW = 600, vbH = 600;
+    const vbW = 500, vbH = 500;
     const margin = { top: 40, right: 30, bottom: 40, left: 60 };
     const width  = vbW - margin.left - margin.right;
     const height = vbH - margin.top - margin.bottom;
-
-
 
     // put svg in chart container
     const root = d3.select(container);
@@ -171,7 +241,7 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     .style("text-anchor", "middle")
     .style("font-size", "16px")
     .style("fill", "#777")
-    .text("Average Speed");
+    .text(y_label);
 
     g.append("text")
     .attr("y", height + margin.bottom - 6)
@@ -179,15 +249,13 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     .style("text-anchor", "middle")
     .style("font-size", "16px")
     .style("fill", "#777")
-    .text("Days");
+    .text(x_label);
 
     // make the line generator
     const line = d3.line()
         .x((d, i) => x(i))
         .y(d => y(d));
 
-    
-    
     // add the line to the svg element
     g.append("path")
         .datum(data)
@@ -196,8 +264,6 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
         .attr("stroke-width", 2)
         .attr("d", line);
 
-
-    
     const circle = g.append("circle")
     .attr("r", 0)
     .attr("fill", "steelblue")

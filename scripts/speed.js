@@ -1,15 +1,19 @@
 import { renderSimulation, renderGraph } from "./render.js";
 
 class Mahlukat{
+    static mahlukat_names = ["Isabella", "Vincentio", "Claudio", "Angelo", "Escalus", "Lucio", "Mariana", "Pompey", "Provost", "Elbow", "Barnadine", "Juliet"];
+
     position_x;
     position_y;
     speed;
-
+    
     constructor(x, y, speed){
         this.position_x = x;
         this.position_y = y;
         this.speed = speed;
         this.eaten_today = false;
+        let selection_index = Math.floor(Math.random()*Mahlukat.mahlukat_names.length);
+        this.name = Mahlukat.mahlukat_names[selection_index];
     }
 
     print(){
@@ -152,8 +156,8 @@ function updateStats() {
 
 let isPaused = false;
 async function simulate(simulation_length, startingMahlukats, startingFoods, replenishing_food_count){
-    initiate_entities(5, 5);
-    stats["mahlukats"] = 5;
+    initiate_entities(startingMahlukats, startingFoods);
+    stats["mahlukats"] = startingMahlukats;
     stats["avg_speed"] = avg_speed(mahlukats);
     updateStats();
     let data = [];
@@ -172,7 +176,8 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
             await sleep(10);
         }
         let foods_copy = Array.from(foods);
-        for(let food of foods_copy){
+
+        for(let food of foods_copy){ // iterate over each food and its pursues to improve efficiency compared to checking every mahlukat for every food
             if(food.children.length == 0){
                 continue;
             }

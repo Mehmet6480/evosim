@@ -24,7 +24,7 @@ svg {border : 1px solid #000000 }
     border: 1px solid #000000;
 }
 .chart svg{
-    width: 500px;
+    width: 430px;
     height:auto;
     border: 1px solid #000000;
     background-color: #f0f0f0;
@@ -47,7 +47,7 @@ rect{
     color: white;
     border: 1px solid #eeeeee;
     display: none;
-    opacity: .65;
+    opacity: .75;
 }
 .slideContainer{
     width: 75%;
