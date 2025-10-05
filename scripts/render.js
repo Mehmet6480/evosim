@@ -288,7 +288,7 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     .style("display", "block")
     .style("left",  (screenPoint.x + 49) + "px")  // small offset
     .style("top",   (screenPoint.y + 33) + "px")
-    .html(`Day: ${focusIndex}<br>Average Speed: ${data[focusIndex].toFixed(3)}`);
+    .html(`Day: ${focusIndex}<br>${y_label}: ${data[focusIndex].toFixed(3)}`);
     }
     
     const listeningRectangle = g.append("rect")
@@ -322,7 +322,7 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     .style("display", "block")
     .style("left", `${screenPoint.x + 49}px`)
     .style("top", `${screenPoint.y + 33}px`)
-    .html(`<text>Day: ${i}<br>Average Speed: ${d.toFixed(3)}</text>`)
+    .html(`<text>Day: ${i}<br>${y_label}: ${d.toFixed(3)}</text>`);
         })
 
     listeningRectangle.on("mouseleave", function () {

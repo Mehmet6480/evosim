@@ -114,9 +114,9 @@ let stats = { day : 1 };
 let average_speeds = [];
 let populations = [];
 
-function initiate_entities(number_of_foods, number_of_mahlukat){
+function initiate_entities(number_of_foods, number_of_mahlukat, starting_speeds){
     for(let i = 0; i < number_of_mahlukat; i++){
-        let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.2); // 0-100, 0-100, 0.2-0.7
+        let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, starting_speeds * (Math.random() * 1.0 + 0.5)); // random coordinates, up to 50% deviation from avg starting speed
         mahlukats.push(new_mahlukat);
     }
     for(let i = 0; i < number_of_foods; i++){
@@ -145,8 +145,8 @@ function updateStats() {
 }
 
 let isPaused = false;
-async function simulate(simulation_length, startingMahlukats = 10, startingFoods = 10, replenishing_food_count = 10){
-    initiate_entities(startingMahlukats, startingFoods);
+async function simulate(simulation_length, startingMahlukats = 10, startingFoods = 10, replenishing_food_count = 10, starting_speeds = 0.45){
+    initiate_entities(startingMahlukats, startingFoods, starting_speeds);
     stats["mahlukats"] = startingMahlukats;
     stats["avg_speed"] = avg_speed(mahlukats);
     updateStats();
@@ -259,8 +259,9 @@ starterButton.addEventListener("click", () => {
         let simulationDays = +document.getElementById("simulationDays").value || 10;
         let startingFoods = +document.getElementById("startingFoods").value || 10;
         let replenishingFoods = +document.getElementById("replenishingFoods").value || 10;
-        console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods);
-       simulate(simulationDays, startingMahlukats, startingFoods, replenishingFoods); 
+        let startingSpeeds = +document.getElementById("startingSpeeds").value || 0.45;
+        console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds);
+       simulate(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds); 
        simulationRunning = true;
 
     }});

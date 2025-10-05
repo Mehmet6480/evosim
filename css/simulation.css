@@ -153,12 +153,14 @@ h1{
 .input_row{
     margin-top: 20px;
     display: flex;
-    gap: 50px;
+    gap: 10px;
 }
 .input_field{
-    margin-left: 45px;
-    margin-right: 45px;
-    width: 50px;
+    font-size: 13px;
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 160px;
+    text-wrap: stable;
 }
 .above_chart_text{
     text-align: center;
