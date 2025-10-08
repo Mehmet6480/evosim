@@ -65,7 +65,7 @@ class Mahlukat{
             console.log(foods);
             console.log(this);
             if(this.target_food) {this.target_food.children.splice(this.target_food.children.indexOf(this), 1); }
-            this.targetFood = null;
+            this.target_food = null;
             return;
         }
         
@@ -146,7 +146,7 @@ function updateStats() {
 
 let isPaused = false;
 async function simulate(simulation_length, startingMahlukats = 10, startingFoods = 10, replenishing_food_count = 10, starting_speeds = 0.45){
-    initiate_entities(startingMahlukats, startingFoods, starting_speeds);
+    initiate_entities(startingFoods, startingMahlukats, starting_speeds);
     stats["mahlukats"] = startingMahlukats;
     stats["avg_speed"] = avg_speed(mahlukats);
     updateStats();
@@ -160,7 +160,18 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
         mahlukat.assign_target_food(foods); 
     }
 
+    
+
+
     while (day <= simulation_length){
+
+        // no mahlukats left?
+        if (mahlukats.length == 0) {
+            document.getElementById("debug").textContent = "Simulation Over! All mahlukats died.";
+            simulation_running = false;
+            reset_stats();
+            break;
+        }
 
         while(isPaused){
             await sleep(10);
@@ -194,7 +205,7 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
             document.getElementById("debug").textContent = "Simulated Frames: " + delta_time;
         }
         delta_time++;
-        await sleep(1000/simulationSpeed);
+        await sleep(1000/simulation_speed);
         renderSimulation(mahlukats, foods);
 
         if(foods.length == 0){ // End of day
@@ -208,7 +219,7 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
             for(let mahlukat of mahlukats_copy){
                 if(mahlukat.energy > 250){ // Reproduction! Inheritance (of speed genes) + Mutation
                     mahlukat.energy -= 100
-                    let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed + (Math.random() - 0.5)*0.2); // random coords, +- 0.1 around parents speed
+                    let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed * (Math.random()*0.3+0.85)); // random coords, +- 0.1 around parents speed
                     mahlukats.push(new_mahlukat);
                     // I spawn the new mahlukat at a random coordinate so they dont immediately have to compete with their parents.
                 }
@@ -231,38 +242,42 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
             
         }
     }
-    simulationRunning = false;
+    simulation_running = false;
+    reset_stats();
+}
+
+function reset_stats(){
     average_speeds = [];
     mahlukats = [];
     foods = [];
+    populations = [];
 }
-
 // Simulation Controller
 
-let speedSlider = document.getElementById("simulationSpeed");
+let speedSlider = document.getElementById("simulation_speed");
 let output = document.getElementById("value");
 output.innerHTML = speedSlider.value;
 speedSlider.oninput = function() {
     output.innerHTML = this.value;
-    simulationSpeed = this.value;
+    simulation_speed = this.value;
 }
 const pauserButton = document.getElementById("pauser");
 pauserButton.addEventListener("click", () => {isPaused = !isPaused; console.log(isPaused)});
 
-let simulationSpeed = speedSlider.value;
+let simulation_speed = speedSlider.value;
 const starterButton = document.getElementById("starter");
-let simulationRunning = false
+let simulation_running = false
 
 starterButton.addEventListener("click", () => {
-    if(!simulationRunning) {
+    if(!simulation_running) {
         let startingMahlukats = +document.getElementById("startingMahlukats").value;
         let simulationDays = +document.getElementById("simulationDays").value || 10;
-        let startingFoods = +document.getElementById("startingFoods").value || 10;
+        let startingFoods = +document.getElementById("startingFoods").value || 10; // Default starting values
         let replenishingFoods = +document.getElementById("replenishingFoods").value || 10;
         let startingSpeeds = +document.getElementById("startingSpeeds").value || 0.45;
         console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds);
        simulate(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds); 
-       simulationRunning = true;
+       simulation_running = true;
 
     }});
 

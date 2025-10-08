@@ -156,7 +156,7 @@ function updateStats() {
 
 let isPaused = false;
 async function simulate(simulation_length, startingMahlukats, startingFoods, replenishing_food_count){
-    initiate_entities(startingMahlukats, startingFoods);
+    initiate_entities(startingFoods, startingMahlukats);
     stats["mahlukats"] = startingMahlukats;
     stats["avg_speed"] = avg_speed(mahlukats);
     updateStats();
@@ -176,6 +176,12 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
             await sleep(10);
         }
         let foods_copy = Array.from(foods);
+        
+        if (mahlukats.length == 0) {
+            document.getElementById("debug").textContent = "Simulated Over! All mahlukats died.";
+            simulationRunning = false;
+
+        }
 
         for(let food of foods_copy){ // iterate over each food and its pursues to improve efficiency compared to checking every mahlukat for every food
             if(food.children.length == 0){
