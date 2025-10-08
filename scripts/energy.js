@@ -62,8 +62,6 @@ class Mahlukat{
         this.energy -= energy_consumption;
         if (this.energy <= 0 ||  this.days_alive > 15){
             mahlukats.splice(mahlukats.indexOf(this) , 1);
-            console.log(foods);
-            console.log(this);
             if(this.target_food) {this.target_food.children.splice(this.target_food.children.indexOf(this), 1); }
             this.target_food = null;
             return;
@@ -137,10 +135,10 @@ function avg_speed(mahlukat_list){
     return sum/mahlukat_list.length;
 }
 
-function updateStats() {
+function update_stats() {
   const stats_element = document.getElementById('stats');
   if (stats_element){
-      stats_element.textContent = `Day: ${stats.day} | Mahlukats: ${stats.mahlukats} | Avg speed: ${stats.avg_speed.toFixed(3)}`;
+      stats_element.textContent = `Day: ${stats.day} | Mahlukats: ${mahlukats.length != 0 ? mahlukats.length : stats.mahlukats} | Avg speed: ${stats.avg_speed.toFixed(3)}`;
   }
 }
 
@@ -149,7 +147,7 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
     initiate_entities(startingFoods, startingMahlukats, starting_speeds);
     stats["mahlukats"] = startingMahlukats;
     stats["avg_speed"] = avg_speed(mahlukats);
-    updateStats();
+    update_stats();
     let data = [];
 
     let delta_time = 0;
@@ -160,17 +158,15 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
         mahlukat.assign_target_food(foods); 
     }
 
-    
-
-
     while (day <= simulation_length){
 
+        let tick_starting = (Date.now() + performance.now());
         // no mahlukats left?
         if (mahlukats.length == 0) {
             document.getElementById("debug").textContent = "Simulation Over! All mahlukats died.";
             simulation_running = false;
             reset_stats();
-            break;
+            return;
         }
 
         while(isPaused){
@@ -205,6 +201,10 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
             document.getElementById("debug").textContent = "Simulated Frames: " + delta_time;
         }
         delta_time++;
+        update_stats();
+        let time_elapsed = (((Date.now() + performance.now() - tick_starting).toFixed(3)) + "ms");
+        console.log("time elapsed this tick: " + time_elapsed);
+
         await sleep(1000/simulation_speed);
         renderSimulation(mahlukats, foods);
 
@@ -237,7 +237,7 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
             populations.push(mahlukats.length);
             renderGraph(average_speeds, "#speed_chart");
             renderGraph(populations, "#population_chart", "Population vs. Day", "Population")
-            updateStats();
+            update_stats();
 
             
         }
@@ -262,7 +262,7 @@ speedSlider.oninput = function() {
     simulation_speed = this.value;
 }
 const pauserButton = document.getElementById("pauser");
-pauserButton.addEventListener("click", () => {isPaused = !isPaused; console.log(isPaused)});
+pauserButton.addEventListener("click", () => {isPaused = !isPaused});
 
 let simulation_speed = speedSlider.value;
 const starterButton = document.getElementById("starter");

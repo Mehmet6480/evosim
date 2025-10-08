@@ -132,17 +132,29 @@ export function renderSimulation(mahlukats, foods) {
 
 
 
-let focusIndex = null;
-let mouseInside = false;
-const tooltip = d3.select("body")
+const chart_state = new Map(); // cache per container of each graph
+function get_chart_state(container) {
+  if(!chart_state.has(container)){
+    const tooltip = d3.select("body")
     .append("div")
     .attr("class", "tooltip")
     .style("position", "absolute")
     .style("pointer-events", "none");
-
+  
+    chart_state.set(container, {
+      focus_index: null,
+      mouse_inside: false,
+      tooltip
+    });
+  }
+    return chart_state.get(container);
+}
 
 export function renderGraph(data, container = "#speed_chart", title = "Average Speed vs Day", y_label = "Average Speed", x_label = "Day"){
-    // set up dimensions
+    const state = get_chart_state(container);
+    const {tooltip} = state;  
+  
+  // set up dimensions
     const vbW = 500, vbH = 500;
     const margin = { top: 40, right: 30, bottom: 40, left: 60 };
     const width  = vbW - margin.left - margin.right;
@@ -271,14 +283,14 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     .attr("opacity", .7)
     .style("pointer-events", "none");
 
-    if (mouseInside && focusIndex !== null && data[focusIndex] != null) { // stop nuking the old circle 
+    if (state.mouse_inside && state.focus_index !== null && data[state.focus_index] != null) { // stop nuking the old circle 
     circle
-    .attr("cx", x(focusIndex))
-    .attr("cy", y(data[focusIndex]))
+    .attr("cx", x(state.focus_index))
+    .attr("cy", y(data[state.focus_index]))
     .attr("r", 6);
 
-    const fx = x(focusIndex);
-    const fy = y(data[focusIndex]);
+    const fx = x(state.focus_index);
+    const fy = y(data[state.focus_index]);
     const svgNode = svg.node();
     const pt = svgNode.createSVGPoint();
     pt.x = fx; pt.y = fy;
@@ -288,7 +300,7 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     .style("display", "block")
     .style("left",  (screenPoint.x + 49) + "px")  // small offset
     .style("top",   (screenPoint.y + 33) + "px")
-    .html(`Day: ${focusIndex}<br>${y_label}: ${data[focusIndex].toFixed(3)}`);
+    .html(`Day: ${state.focus_index}<br>${y_label}: ${data[state.focus_index].toFixed(3)}`);
     }
     
     const listeningRectangle = g.append("rect")
@@ -298,20 +310,18 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     .attr("pointer-events", "all");
 
     listeningRectangle
-    .on("mouseenter", () => {mouseInside = true;})
-    .on("mousemove", function (event) {
+    .on("mouseenter", () => {state.mouse_inside = true;})
+    .on("mousemove", function () {
         const [xCoordinate] = d3.mouse(this);
         const x0 = x.invert(xCoordinate);
         const i = Math.max(0, Math.min(data.length - 1, Math.round(x0))); // <-- clamp
         const d = data[i]
         const finalX = x(i)
         const finalY = y(d)
-    
-    
+        
     circle.attr("cx", finalX).attr("cy", finalY);
     circle.attr("r", 6)
-    focusIndex = i;
-
+    state.focus_index = i;
 
     const svgNode = svg.node();
     const pt = svgNode.createSVGPoint();
@@ -327,7 +337,8 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
 
     listeningRectangle.on("mouseleave", function () {
     circle.attr("r", 0);
-    mouseInside = false;
+    state.mouse_inside = false;
+    state.focus_index = null;
     tooltip.style("display", "none");  });  
 
 }
