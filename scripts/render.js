@@ -47,7 +47,7 @@ export function renderSimulation(mahlukats, foods) {
     .join("g")
       .attr("class", "food");
 
-  const lineGroup = svg.selectAll("g.pursuit_lines")
+  const line_group = svg.selectAll("g.pursuit_lines")
   .data([null])
   .join("g")
   .attr("class", "pursuit_lines");
@@ -61,14 +61,14 @@ export function renderSimulation(mahlukats, foods) {
       .style("cursor", "pointer") 
       .on("mouseenter", function (event, d) {
       // highlight ONLY the hovered circle
-      d3.select(this).attr("stroke", "#222").attr("stroke-width", 2);
+      d3.select(this).attr("stroke", "#222").attr("stroke-width", 1);
       // show the tooltip
       mahlukat_tooltip.style("display", "block");
 
-      lineGroup.selectAll("line").remove();
+      line_group.selectAll("line").remove();
 
       if (foods[d].children && foods[d].children.length > 0){
-        lineGroup.selectAll("line")
+        line_group.selectAll("line")
         .data(foods[d].children)
         .join("line")
         .attr("x1", x(foods[d].position_x))
@@ -91,26 +91,27 @@ export function renderSimulation(mahlukats, foods) {
         d3.select(this)
         .attr("stroke", null)
         .attr("stroke-width", null);
-        lineGroup.selectAll("line").remove();
+        line_group.selectAll("line").remove();
         mahlukat_tooltip.style("display", "none");
       
       })
       // mahlukat layer: create-or-reuse the group, then join circles to data m
-  const mahlGroup = svg.selectAll("g.mahlukat")
+  const mahlukat_group = svg.selectAll("g.mahlukat")
     .data([null])
     .join("g")
       .attr("class", "mahlukat");
 
-  mahlGroup.selectAll("circle")
+    const mahlukat_symbol = d3.symbol().type(d3.symbolCross).size(80);
+
+    mahlukat_group.selectAll("path")
     .data(mahlukats)
-    .join("circle")
-      .attr("r", 5)
-      .attr("cx", d => x(d.position_x))
-      .attr("cy", d => y(d.position_y))
+    .join("path")
+      .attr("d", mahlukat_symbol)
+      .attr("transform", d => `translate(${x(d.position_x)}, ${y(d.position_y)}) rotate(45)`)
       .style("cursor", "pointer") 
       .on("mouseenter", function (event, d) {
       // highlight ONLY the hovered circle
-      d3.select(this).attr("stroke", "#222").attr("stroke-width", 2);
+      d3.select(this).attr("stroke", "#222").attr("stroke-width", 1);
       // show the tooltip
       mahlukat_tooltip.style("display", "block");
       })
@@ -119,7 +120,7 @@ export function renderSimulation(mahlukats, foods) {
       mahlukat_tooltip
       .style("left", (px+18) + "px")
       .style("top", (py+18) + "px")
-      .html(`Mahlukat ${mahlukats[d].name != null ? mahlukats[d].name : 'no name'}<br>X: ${mahlukats[d].position_x.toFixed(2)}, Y: ${mahlukats[d].position_y.toFixed(2)}<br>Speed: ${mahlukats[d].speed.toFixed(3)}<br>${mahlukats[d].energy != null ? "Energy: " + mahlukats[d].energy.toFixed(2) : ""}<br>${mahlukats[d].days_alive != 0 ? "Days Alive: " + mahlukats[d].days_alive :  "DA: " +  mahlukats[d].days_alive}`);
+      .html(`Mahlukat ${mahlukats[d].name != null ? mahlukats[d].name : 'no name'}<br>X: ${mahlukats[d].position_x.toFixed(2)}, Y: ${mahlukats[d].position_y.toFixed(2)}<br>Speed: ${mahlukats[d].speed.toFixed(3)}<br>${mahlukats[d].energy != null ? "Energy: " + mahlukats[d].energy.toFixed(2) : ""}<br>${mahlukats[d].days_alive != 0 ? "Days Alive: " + mahlukats[d].days_alive :  "Days Alive: " +  mahlukats[d].days_alive}`);
       })
       .on("mouseleave", function() {
         d3.select(this)

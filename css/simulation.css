@@ -10,9 +10,13 @@
 
 svg {border : 1px solid #000000 }
         
-.mahlukat circle {fill: #1fc905}     
-.mahlukat circle:hover {fill: #117602}
-.food circle {fill: #bfc905}
+.mahlukat path {
+    fill: #12a906;
+    /* stroke: #12a906; */  
+    /*  stroke-width: 1.5px; */
+}
+.mahlukat path:hover{ fill: #117602; }
+.food circle {fill: #b2bb04; }
 .food circle:hover {fill: #8f9603}
 
 .chart_container{
