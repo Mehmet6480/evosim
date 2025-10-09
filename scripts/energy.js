@@ -265,7 +265,7 @@ speedSlider.oninput = function() {
 const pauserButton = document.getElementById("pauser");
 pauserButton.addEventListener("click", () => {isPaused = !isPaused});
 
-let simulation_speed = speedSlider.value;
+let simulation_speed = +speedSlider.value;
 const starterButton = document.getElementById("starter");
 let simulation_running = false
 const input_form = document.querySelector(".input_row");
