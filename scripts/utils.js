@@ -1,5 +1,5 @@
 export function read_input(id, fallback){
-    input = document.getElementById(id);
+    const input = document.getElementById(id);
     if (!input){
         return fallback; // no input field? just return fallback already
     }
@@ -14,6 +14,7 @@ export function read_input(id, fallback){
         return min;
     }
     if (raw_input > max){
+        console.log(max/raw_input);  
         return max;
     }
     return input.value;

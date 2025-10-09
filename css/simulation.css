@@ -164,8 +164,12 @@ h1{
     margin-left: 10px;
     margin-right: 10px;
     width: 160px;
-    text-wrap: stable;
 }
+.input_field input[type="number"] {
+  width: 100%;
+  min-width: 0;            
+}
+
 .above_chart_text{
     text-align: center;
     align-items: center;

@@ -1,4 +1,5 @@
 import { renderSimulation, renderGraph } from "./render.js";
+import { read_input } from "./utils.js";
 
 class Mahlukat{
     static mahlukat_names = ["Isabella", "Vincentio", "Claudio", "Angelo", "Escalus", "Lucio", "Mariana", "Pompey", "Provost", "Elbow", "Barnadine", "Juliet"];
@@ -179,7 +180,7 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
         
         if (mahlukats.length == 0) {
             document.getElementById("debug").textContent = "Simulated Over! All mahlukats died.";
-            simulationRunning = false;
+            simulation_running = false;
 
         }
 
@@ -210,7 +211,7 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
             document.getElementById("debug").textContent = "Simulated Frames: " + delta_time;
         }
         delta_time++;
-        await sleep(1000/simulationSpeed);
+        await sleep(1000/simulation_speed);
         renderSimulation(mahlukats, foods);
 
         if(foods.length == 0){ // End of day
@@ -249,7 +250,7 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
             
         }
     }
-    simulationRunning = false;
+    simulation_running = false;
     average_speeds = [];
     mahlukats = [];
     foods = [];
@@ -262,25 +263,31 @@ let output = document.getElementById("value");
 output.innerHTML = speedSlider.value;
 speedSlider.oninput = function() {
     output.innerHTML = this.value;
-    simulationSpeed = this.value;
+    simulation_speed = this.value;
 }
 const pauserButton = document.getElementById("pauser");
 pauserButton.addEventListener("click", () => {isPaused = !isPaused; console.log(isPaused)});
 
-let simulationSpeed = speedSlider.value;
+let simulation_speed = speedSlider.value;
 const starterButton = document.getElementById("starter");
-let simulationRunning = false
+let simulation_running = false
+
+const input_form = document.querySelector(".input_row");
 
 starterButton.addEventListener("click", () => {
-    if(!simulationRunning) {
-        let startingMahlukats = +document.getElementById("startingMahlukats").value;
-        let simulationDays = +document.getElementById("simulationDays").value || 10;
-        let startingFoods = +document.getElementById("startingFoods").value || 10;
-        let replenishingFoods = +document.getElementById("replenishingFoods").value || 10;
-        console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods);
-       simulate(simulationDays, startingMahlukats, startingFoods, replenishingFoods); 
-       simulationRunning = true;
-
+    if(!simulation_running) {
+        if (input_form && !input_form.reportValidity()){
+            return;
+        }
+        let startingMahlukats = read_input("startingMahlukats", 10) 
+        let simulationDays = read_input("simulationDays", 10);
+        let startingFoods = read_input("startingFoods", 10); // Default starting values
+        let replenishingFoods = read_input("replenishingFoods", 10);
+        let startingSpeeds = read_input("startingSpeeds", 0.5);
+        console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds);
+        simulate(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds); 
+        simulation_running = true;
     }});
+
 
 
