@@ -1,4 +1,5 @@
 import { renderSimulation, renderGraph } from "./render.js";
+import { read_input } from "./utils.js";
 
 class Mahlukat{
     static mahlukat_names = ["Isabella", "Vincentio", "Claudio", "Angelo", "Escalus", "Lucio", "Mariana", "Pompey", "Provost", "Elbow", "Barnadine", "Juliet"];
@@ -267,14 +268,18 @@ pauserButton.addEventListener("click", () => {isPaused = !isPaused});
 let simulation_speed = speedSlider.value;
 const starterButton = document.getElementById("starter");
 let simulation_running = false
+const input_form = document.querySelector(".input_row");
 
 starterButton.addEventListener("click", () => {
     if(!simulation_running) {
-        let startingMahlukats = +document.getElementById("startingMahlukats").value;
-        let simulationDays = +document.getElementById("simulationDays").value || 10;
-        let startingFoods = +document.getElementById("startingFoods").value || 10; // Default starting values
-        let replenishingFoods = +document.getElementById("replenishingFoods").value || 10;
-        let startingSpeeds = +document.getElementById("startingSpeeds").value || 0.45;
+        if (input_form && !input_form.reportValidity()){
+            return;
+        }
+        let startingMahlukats = read_input("startingMahlukats", 10) 
+        let simulationDays = read_input("simulationDays", 10);
+        let startingFoods = read_input("startingFoods", 10); // Default starting values
+        let replenishingFoods = read_input("replenishingFoods", 10);
+        let startingSpeeds = read_input("startingSpeeds", 0.5);
         console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds);
        simulate(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds); 
        simulation_running = true;
