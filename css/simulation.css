@@ -109,7 +109,7 @@ rect{
   color: black;
 }
 .sliderWrap::after{
-  content: "300";
+  content: "500";
   position: absolute;
   right: 0;
   top: 28px;
