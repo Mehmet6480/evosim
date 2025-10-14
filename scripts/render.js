@@ -1,3 +1,5 @@
+import { compress_dataset, get_compression_factor  } from "./utils.js";
+
 // setting up chart
 const mahlukat_tooltip = d3.select("body")
     .append("div")
@@ -7,8 +9,15 @@ const mahlukat_tooltip = d3.select("body")
     .style("pointer-events", "none")
     .style("z-index", "9999"); 
 
+let last_rendered = 0;
+let total_renders = 0;
 
-export function renderSimulation(mahlukats, foods) {
+export function renderSimulation(mahlukats, foods, max_framerate = 25) {
+  if ((Date.now() - last_rendered) < (1000/max_framerate)) {
+    return;
+  }
+  total_renders++;
+  last_rendered = Date.now();
   const width = 420;
   const height = 420;
   const margin = { top: 20, right: 20, bottom: 30, left: 40 };
@@ -151,7 +160,10 @@ function get_chart_state(container) {
     return chart_state.get(container);
 }
 
-export function renderGraph(data, container = "#speed_chart", title = "Average Speed vs Day", y_label = "Average Speed", x_label = "Day"){
+export function renderGraph(raw_data, container = "#speed_chart", title = "Average Speed vs Day", y_label = "Average Speed", x_label = "Day"){
+    const APPROX_DATAPOINTS = 150;
+    const data = compress_dataset(raw_data, APPROX_DATAPOINTS);
+    const compression_factor = get_compression_factor(raw_data, APPROX_DATAPOINTS);
     const state = get_chart_state(container);
     const {tooltip} = state;  
   
@@ -176,12 +188,12 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     // set up x y scales
     // define x y domains
     const x = d3.scaleLinear()
-    .domain([0, Math.max(0, data.length-1)])
+    .domain([0, Math.max(0, raw_data.length-1)])
     .nice()
     .range([0,width]);
 
     const y = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d)])
+    .domain([0, d3.max(raw_data, d => d)])
     .nice()
     .range([height,0]);
 
@@ -245,7 +257,6 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     .text(title);
 
     // axis labels
-
     g.append("text")
     .attr("transform", "rotate(-90)")
     .attr("y", 0 - margin.left)
@@ -266,7 +277,7 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
 
     // make the line generator
     const line = d3.line()
-        .x((d, i) => x(i))
+        .x((d, i) => x(i*compression_factor))
         .y(d => y(d));
 
     // add the line to the svg element
@@ -317,8 +328,8 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
         const x0 = x.invert(xCoordinate);
         const i = Math.max(0, Math.min(data.length - 1, Math.round(x0))); // <-- clamp
         const d = data[i]
-        const finalX = x(i)
-        const finalY = y(d)
+        const finalX = x(i * compression_factor);
+        const finalY = y(d);
         
     circle.attr("cx", finalX).attr("cy", finalY);
     circle.attr("r", 6)
@@ -341,5 +352,4 @@ export function renderGraph(data, container = "#speed_chart", title = "Average S
     state.mouse_inside = false;
     state.focus_index = null;
     tooltip.style("display", "none");  });  
-
 }

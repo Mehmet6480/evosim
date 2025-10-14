@@ -204,7 +204,6 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
         delta_time++;
         update_stats();
         let time_elapsed = (((Date.now() + performance.now() - tick_starting).toFixed(3)) + "ms");
-        console.log("time elapsed this tick: " + time_elapsed);
 
         await sleep(1000/simulation_speed);
         renderSimulation(mahlukats, foods);
@@ -220,9 +219,10 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
             for(let mahlukat of mahlukats_copy){
                 if(mahlukat.energy > 250){ // Reproduction! Inheritance (of speed genes) + Mutation
                     mahlukat.energy -= 100
-                    let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed * (Math.random()*0.3+0.85)); // random coords, +- 0.1 around parents speed
-                    mahlukats.push(new_mahlukat);
+                    let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed * (1 + (Math.random() * 0.3 - 0.15) * mutationAmplifier)); // tehe speed formula is +-15% around parent multiplied by amplificaiton
                     // I spawn the new mahlukat at a random coordinate so they dont immediately have to compete with their parents.
+                    mahlukats.push(new_mahlukat);
+
                 }
             }
             for(let mahlukat of mahlukats){
@@ -255,7 +255,7 @@ function reset_stats(){
 }
 // Simulation Controller
 
-let speedSlider = document.getElementById("simulation_speed");
+const speedSlider = document.getElementById("simulation_speed");
 let output = document.getElementById("value");
 output.innerHTML = speedSlider.value;
 speedSlider.oninput = function() {
@@ -265,6 +265,12 @@ speedSlider.oninput = function() {
 const pauserButton = document.getElementById("pauser");
 pauserButton.addEventListener("click", () => {isPaused = !isPaused});
 
+
+const mutation_amp_slider = document.getElementById("mutationAmplifier");
+let mutationAmplifier = read_input("mutationAmplifier", 1);
+mutation_amp_slider.oninput = function() {
+    mutationAmplifier = this.value;
+}
 let simulation_speed = +speedSlider.value;
 const starterButton = document.getElementById("starter");
 let simulation_running = false
@@ -280,7 +286,7 @@ starterButton.addEventListener("click", () => {
         let startingFoods = read_input("startingFoods", 10); // Default starting values
         let replenishingFoods = read_input("replenishingFoods", 10);
         let startingSpeeds = read_input("startingSpeeds", 0.5);
-        console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds);
+        console.log("simulation starting with settings: " + simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds);
        simulate(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds); 
        simulation_running = true;
 

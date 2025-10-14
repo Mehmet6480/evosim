@@ -53,7 +53,13 @@
             <label for = "startingSpeeds">Avg Starting Speeds</label>
             <input id = "startingSpeeds" type = "number" value = "0.5" min = "0.1" max = "10" step = "0.01" required>
         </div>
-
+    </form>
+    <p class = "normal_text"><br>Dynamic Parameters</p>
+    <form class = "input_row" action = "#" >
+        <div class = "input_field">
+            <label for = "mutationAmplifier">Mutation Amplifier</label>
+            <input id = "mutationAmplifier" type = "number" value = 1 min = 0 max = 30 step = "0.1" required> 
+        </div>
     </form>
     <div class = "above_chart_text">
     <p class = "normal_text" id = "stats">Start a simulation! </p>
@@ -79,7 +85,7 @@
         </div>    
     </div>
 
-<p class = "version_tracker">v0.3</p>
+<p class = "version_tracker">v0.4</p>
 
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
