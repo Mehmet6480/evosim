@@ -330,6 +330,7 @@ export function renderGraph(raw_data, container = "#speed_chart", title = "Avera
         const d = data[i]
         const finalX = x(i * compression_factor);
         const finalY = y(d);
+        console.log
         
     circle.attr("cx", finalX).attr("cy", finalY);
     circle.attr("r", 6)

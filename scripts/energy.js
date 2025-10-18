@@ -1,110 +1,33 @@
 import { renderSimulation, renderGraph } from "./render.js";
 import { read_input } from "./utils.js";
+import { ProtoMahlukat, Food } from "./classes.js";
 
-class Mahlukat{
-    static mahlukat_names = ["Isabella", "Vincentio", "Claudio", "Angelo", "Escalus", "Lucio", "Mariana", "Pompey", "Provost", "Elbow", "Barnadine", "Juliet"];
-    position_x;
-    position_y;
-    speed;
-    days_alive;
-    energy;
-    target_food;
+class EnergyMahlukat extends ProtoMahlukat{
 
     constructor(x, y, speed){
-        this.position_x = x;
-        this.position_y = y;
-        this.speed = speed;
-        let selection_index = Math.floor(Math.random()*Mahlukat.mahlukat_names.length);
-        this.name = Mahlukat.mahlukat_names[selection_index];
-
+        super(x, y, speed);
         this.energy = 200;
-        this.days_alive = 0
+        this.days_alive = 0;
+        this.target_food = null;
     }
 
-    print(){
-        return `pos x: ${this.position_x}, pos y: ${this.position_y}, speed: ${this.speed}`;
-    }
 
     assign_target_food(food_list){
-
-        let current_min_dist = Infinity;
-        let min_idx = 0;
-        for(let i in food_list){
-            let current_dist = (food_list[i].position_x - this.position_x)**2 + (food_list[i].position_y - this.position_y)**2;
-            if (current_dist < current_min_dist){
-                current_min_dist = current_dist;
-                min_idx = i;
-            }
-        }
-        food_list[min_idx].children.push(this);
+        let min_idx = super.assign_target_food(food_list);
         this.target_food = food_list[min_idx];
-    }
-    find_dist(x, y){
-        let x_component = (x - this.position_x) ** 2;
-        let y_component = (y - this.position_y) ** 2;
-        return x_component+y_component;
     }
 
     travel_towards(target_x, target_y){
-        // This method is to determine how a mahlukat's coordinates will change in a tick it is traveling towards a target. 
-        let total_distance = this.find_dist(target_x, target_y) ** 0.5;
-        let difference_y = target_y - this.position_y;
-        let difference_x = target_x - this.position_x;
-        // ^Total target displacement vector determined
+        super.travel_towards(target_x, target_y);
 
-        // these variables are for the displacement in ONE TICK of movement
-        let delta_x;
-        let delta_y;
-
-        delta_x = difference_x / total_distance * this.speed;
-        delta_y = difference_y / total_distance * this.speed; 
-
-        let energy_consumption = this.speed**2;
-        this.energy -= energy_consumption;
+        this.energy -= (this.speed**2);
         if (this.energy <= 0 ||  this.days_alive > 15){
             mahlukats.splice(mahlukats.indexOf(this) , 1);
             if(this.target_food) {this.target_food.children.splice(this.target_food.children.indexOf(this), 1); }
             this.target_food = null;
             return;
         }
-        
-        this.position_x += delta_x;
-        this.position_y += delta_y;
     }
-}
-
-class Food{
-    position_x;
-    position_y;
-    children;
-
-    constructor(x, y){
-        this.position_x = x;
-        this.position_y = y;
-        this.children = []
-    }
-
-    print(){
-        let childCoords = this.children
-        .map(c => (`[${c.position_x.toFixed(1)}, ${c.position_y.toFixed(1)}]`))
-        .join(", ");
-
-        return `pos x: ${this.position_x.toFixed(1)}, pos y: ${this.position_y.toFixed(1)}, pursuers: ${childCoords}`;
-    }
-
-    find_closest_child(){
-        let current_min_distance = Infinity;
-        let closest_mahlukat;
-        for(let mahlukat of this.children){
-            let current_dist = mahlukat.find_dist(this.position_x, this.position_y);
-            if(current_dist < current_min_distance){
-                current_min_distance = current_dist;
-                closest_mahlukat = mahlukat;
-            }
-        }
-        return closest_mahlukat;
-    }
-
 }
 
 let mahlukats = [];
@@ -115,7 +38,7 @@ let populations = [];
 
 function initiate_entities(number_of_foods, number_of_mahlukat, starting_speeds){
     for(let i = 0; i < number_of_mahlukat; i++){
-        let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, starting_speeds * (Math.random() * 1.0 + 0.5)); // random coordinates, up to 50% deviation from avg starting speed
+        let new_mahlukat = new EnergyMahlukat(Math.random() * 100, Math.random() * 100, starting_speeds * (Math.random() * 1.0 + 0.5)); // random coordinates, up to 50% deviation from avg starting speed
         mahlukats.push(new_mahlukat);
     }
     for(let i = 0; i < number_of_foods; i++){
@@ -219,7 +142,7 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
             for(let mahlukat of mahlukats_copy){
                 if(mahlukat.energy > 250){ // Reproduction! Inheritance (of speed genes) + Mutation
                     mahlukat.energy -= 100
-                    let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed * (1 + (Math.random() * 0.3 - 0.15) * mutationAmplifier)); // tehe speed formula is +-15% around parent multiplied by amplificaiton
+                    let new_mahlukat = new EnergyMahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed * (1 + (Math.random() * 0.3 - 0.15) * mutationAmplifier)); // tehe speed formula is +-15% around parent multiplied by amplificaiton
                     // I spawn the new mahlukat at a random coordinate so they dont immediately have to compete with their parents.
                     mahlukats.push(new_mahlukat);
 

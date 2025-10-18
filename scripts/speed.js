@@ -1,96 +1,16 @@
 import { renderSimulation, renderGraph } from "./render.js";
 import { read_input } from "./utils.js";
+import { ProtoMahlukat, Food } from "./classes.js"; 
 
-class Mahlukat{
+class SpeedMahlukat extends ProtoMahlukat{
     static mahlukat_names = ["Isabella", "Vincentio", "Claudio", "Angelo", "Escalus", "Lucio", "Mariana", "Pompey", "Provost", "Elbow", "Barnadine", "Juliet"];
-
-    position_x;
-    position_y;
-    speed;
     
     constructor(x, y, speed){
-        this.position_x = x;
-        this.position_y = y;
-        this.speed = speed;
+        super(x, y, speed);
         this.eaten_today = false;
-        let selection_index = Math.floor(Math.random()*Mahlukat.mahlukat_names.length);
-        this.name = Mahlukat.mahlukat_names[selection_index];
-    }
-
-    print(){
-        return `pos x: ${this.position_x}, pos y: ${this.position_y}, speed: ${this.speed}`;
-    }
-
-    assign_target_food(food_list){
-        let current_min_dist = Infinity;
-        let min_idx = 0;
-        for(let i in food_list){
-            let current_dist = (food_list[i].position_x - this.position_x)**2 + (food_list[i].position_y - this.position_y)**2;
-            if (current_dist < current_min_dist){
-                current_min_dist = current_dist;
-                min_idx = i;
-            }
-        }
-        food_list[min_idx].children.push(this);
-    }
-    find_dist(x, y){
-        let x_component = (x - this.position_x) ** 2;
-        let y_component = (y - this.position_y) ** 2;
-        return x_component+y_component;
-    }
-
-    travel_towards(target_x, target_y){
-        // This method is to determine how a mahlukat's coordinates will change in a tick it is traveling towards a target. 
-        let total_distance = this.find_dist(target_x, target_y) ** 0.5;
-        let difference_y = target_y - this.position_y;
-        let difference_x = target_x - this.position_x;
-        // ^Total target displacement vector determined
-
-        // these variables are for the displacement in ONE TICK of movement
-        let delta_x;
-        let delta_y;
-
-        delta_x = difference_x / total_distance * this.speed;
-        delta_y = difference_y / total_distance * this.speed; 
-
-        this.position_x += delta_x;
-        this.position_y += delta_y;
     }
 }
 
-class Food{
-    position_x;
-    position_y;
-    children;
-
-    constructor(x, y){
-        this.position_x = x;
-        this.position_y = y;
-        this.children = []
-    }
-
-    print(){
-        let childCoords = this.children
-        .map(c => (`[${c.position_x.toFixed(1)}, ${c.position_y.toFixed(1)}]`))
-        .join(", ");
-
-        return `pos x: ${this.position_x.toFixed(1)}, pos y: ${this.position_y.toFixed(1)}, pursuers: ${childCoords}`;
-    }
-
-    find_closest_child(){
-        let current_min_distance = Infinity;
-        let closest_mahlukat;
-        for(let mahlukat of this.children){
-            let current_dist = mahlukat.find_dist(this.position_x, this.position_y);
-            if(current_dist < current_min_distance){
-                current_min_distance = current_dist;
-                closest_mahlukat = mahlukat;
-            }
-        }
-        return closest_mahlukat;
-    }
-
-}
 
 let mahlukats = [];
 let living_mahlukats = [];
@@ -100,7 +20,7 @@ let average_speeds = []
 
 function initiate_entities(number_of_foods, number_of_mahlukat){
     for(let i = 0; i < number_of_mahlukat; i++){
-        let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.2); // 0-100, 0-100, 0.2-0.7
+        let new_mahlukat = new SpeedMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.2); // 0-100, 0-100, 0.2-0.7
         mahlukats.push(new_mahlukat);
     }
     for(let i = 0; i < number_of_foods; i++){
@@ -229,7 +149,7 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
 
             for(let mahlukat of mahlukats_copy){
                 if(mahlukat.eaten_today){ // Reproduction! Inheritance (of speed genes) + Mutation
-                    let new_mahlukat = new Mahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed + (Math.random() - 0.5)*0.2); // random coords, +- 0.1 around parents speed
+                    let new_mahlukat = new SpeedMahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed + (Math.random() - 0.5)*0.2); // random coords, +- 0.1 around parents speed
                     mahlukats.push(new_mahlukat);
                     // I spawn the new mahlukat at a random coordinate so they dont immediately have to compete with their parents.
                 }
