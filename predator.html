@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Evolution Simulator</title>
+    <script src="https://d3js.org/d3.v5.min.js" defer></script>
+    <script type = "module" src="scripts/predator.js" defer></script>
+    <link rel = "stylesheet" type = "text/css" href = "css/simulation.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=SUSE+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <a href = index.html class = "linker_button">
+        <span class = "button__icon">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        </span>
+        <span class = "button__text">Home</span>
+    </a>
+    
+
+    
+    <div class = "h1_container"></div>
+    <h1>Predator-Prey Simulation</h1>
+
+    <button id = "starter">
+        <span class = button__text>Start Simulation</span>
+    </button>
+
+    <button id = "pauser">
+        <span class = "button__text">Pause/Resume Simulation</span>
+    </button>
+    <p class = "normal_text">Starting Parameters</p>
+
+    <form class = "input_row" action = "#" >
+        <div class = "input_field">
+            <label for = "simulationDays">Simulation Days</label>
+            <input id = "simulationDays" type = "number" value = "100" min = "10" max = "100000" required>
+        </div>
+        <div class = "input_field">
+            <label for = "startingMahlukats">Starting Mahlukats</label>
+            <input id = "startingMahlukats" type = "number" value = "12" min = "1" max = "200" required>
+        </div>
+        <div class = "input_field">
+            <label for = "startingFoods">Starting Food</label>
+            <input id = "startingFoods" type = "number" value = "12" min = "1" max = "100" required>
+        </div>
+        <div class = "input_field">
+            <label for = "replenishingFoods">Replenishing Food</label>
+            <input id = "replenishingFoods" type = "number" value = "12" min = "1" max = "100" required>
+        </div>
+        <div class = "input_field">
+            <label for = "startingSpeeds">Avg Starting Speeds</label>
+            <input id = "startingSpeeds" type = "number" value = "0.5" min = "0.1" max = "10" step = "0.01" required>
+        </div>
+
+    </form>
+    </form>
+    <p class = "normal_text"><br>Dynamic Parameters</p>
+    <form class = "input_row" action = "#" >
+        <div class = "input_field">
+            <label for = "mutationAmplifier">Mutation Amplifier</label>
+            <input id = "mutationAmplifier" type = "number" value = 1 min = 0 max = 30 step = "0.1" required> 
+        </div>
+    </form>
+    <div class = "above_chart_text">
+    <p class = "normal_text" id = "stats">Start a simulation! </p>
+    </div>
+    <div class = "chart_container">
+
+
+        <div id = "simulation_chart" class = "chart"></div>
+        <div id = "mahlukat_population_chart" class = "chart"></div>
+        <div id = "predator_population_chart" class = "chart"></div>
+
+
+    </div>
+
+    <p class = "normal_text" id = "debug" style="white-space: pre;"></p>
+
+    <div class = "slideContainer">
+        <div class = "sliderWrap">
+            <input type= "range" min = "1" max = "500" value = "10" id = "simulationSpeed" class = "slider">
+            <div class = "sliderDescription">
+            <p>Target simulation speed (ticks/s): <span id = "value"></span></p>
+            </div>
+        </div>    
+    </div>
+
+<p class = "version_tracker">v0.4</p>
+
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>

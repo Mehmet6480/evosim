@@ -13,7 +13,7 @@ class EnergyMahlukat extends ProtoMahlukat{
 
 
     assign_target_food(food_list){
-        let min_idx = super.assign_target_food(food_list);
+        let min_idx = super.assign_target_food(food_list, true);
         this.target_food = food_list[min_idx];
     }
 
@@ -142,7 +142,7 @@ async function simulate(simulation_length, startingMahlukats = 10, startingFoods
             for(let mahlukat of mahlukats_copy){
                 if(mahlukat.energy > 250){ // Reproduction! Inheritance (of speed genes) + Mutation
                     mahlukat.energy -= 100
-                    let new_mahlukat = new EnergyMahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed * (1 + (Math.random() * 0.3 - 0.15) * mutationAmplifier)); // tehe speed formula is +-15% around parent multiplied by amplificaiton
+                    let new_mahlukat = new EnergyMahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed * (1 + (Math.random() * 0.3 - 0.15) * mutation_amplifier)); // tehe speed formula is +-15% around parent multiplied by amplificaiton
                     // I spawn the new mahlukat at a random coordinate so they dont immediately have to compete with their parents.
                     mahlukats.push(new_mahlukat);
 

@@ -2,25 +2,49 @@ import { renderSimulation, renderGraph } from "./render.js";
 import { read_input } from "./utils.js";
 import { ProtoMahlukat, Food } from "./classes.js"; 
 
-export class SpeedMahlukat extends ProtoMahlukat{
-    
+class PredatorMahlukat extends ProtoMahlukat{
     constructor(x, y, speed){
         super(x, y, speed);
         this.eaten_today = false;
     }
 }
+class PreyMahlukat extends ProtoMahlukat{
+    constructor(x, y, speed){
+        super(x, y, speed);
+        this.eaten_today = false;
+        this.children = [];
+    }
+
+    find_closest_child(){
+        let current_min_distance = Infinity;
+        let closest_predator;
+        for(let predator of this.children){
+            let current_dist = predator.find_dist(this.position_x, this.position_y);
+            if(current_dist < current_min_distance){
+                current_min_distance = current_dist;
+                closest_predator = predator;
+            }
+        }
+        return closest_predator;
+    }
+}
 
 
 let mahlukats = [];
+let predators = [];
 let living_mahlukats = [];
 let foods = [];
 let stats = {day: 1}
 let average_speeds = []
 
-function initiate_entities(number_of_foods, number_of_mahlukat){
+function initiate_entities(number_of_foods, number_of_mahlukat, number_of_predators){
     for(let i = 0; i < number_of_mahlukat; i++){
-        let new_mahlukat = new SpeedMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.2); // 0-100, 0-100, 0.2-0.7
+        let new_mahlukat = new PreyMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.2); // 0-100, 0-100, 0.2-0.7
         mahlukats.push(new_mahlukat);
+    }
+    for(let i = 0; i < number_of_predators; i++){
+        let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.2); // 0-100, 0-100, 0.2-0.7
+        predators.push(new_predator);
     }
     for(let i = 0; i < number_of_foods; i++){
         let new_food = new Food(Math.random() * 100, Math.random() * 100); // 0-100, 0-100, []
@@ -28,31 +52,6 @@ function initiate_entities(number_of_foods, number_of_mahlukat){
     }
 }
 
-
-function console_display(){
-    let grid = Array.from({length: 40}, () => Array(40).fill("_ "));
-
-    for(let mahlukat of mahlukats){
-        let x_index = Math.round(mahlukat.position_x / 2.5);
-        let y_index = Math.round(mahlukat.position_y / 2.5);
-
-        grid[y_index][x_index] = "X ";
-    }
-    for(let food of foods){
-        let x_index = Math.round(food.position_x / 2.5);
-        let y_index = Math.round(food.position_y / 2.5);
-
-        grid[y_index][x_index] = "O ";
-    }
-
-    for(let row of grid){
-        let row_str = ""
-        for(let chr of row){
-            row_str += chr
-        }
-    console.log(row_str);
-    }
-}
 
 
 function sleep(ms) {
@@ -75,9 +74,10 @@ function updateStats() {
 }
 
 let isPaused = false;
-async function simulate(simulation_length, startingMahlukats, startingFoods, replenishing_food_count){
-    initiate_entities(startingFoods, startingMahlukats);
+async function simulate(simulation_length, startingMahlukats, startingPredators, startingFoods, replenishing_food_count){
+    initiate_entities(startingFoods, startingMahlukats, startingPredators);
     stats["mahlukats"] = startingMahlukats;
+    stats["predators"] = startingPredators;
     stats["avg_speed"] = avg_speed(mahlukats);
     updateStats();
     let data = [];
@@ -89,6 +89,9 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
     for(let mahlukat of mahlukats){ 
         mahlukat.assign_target_food(foods); 
     }
+    for(let predator of predators){
+        predator.assign_target_food(mahlukats);
+    }
 
     while (day <= simulation_length){
 
@@ -98,9 +101,8 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
         let foods_copy = Array.from(foods);
         
         if (mahlukats.length == 0) {
-            document.getElementById("debug").textContent = "Simulated Over! All mahlukats died.";
+            document.getElementById("debug").textContent = "Simulation Over! All mahlukats died.";
             simulation_running = false;
-
         }
 
         for(let food of foods_copy){ // iterate over each food and its pursues to improve efficiency compared to checking every mahlukat for every food
@@ -127,8 +129,29 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
                 }
 
             }
-            document.getElementById("debug").textContent = "Simulated Frames: " + delta_time;
         }
+        let mahlukats_copy = Array.from(mahlukats);
+        for(let mahlukat of mahlukats_copy){
+            let closest_child = mahlukat.find_closest_child();
+            let mahlukat_to_child_distance = (closest_child.find_dist(mahlukat.position_x, mahlukat.position_y)) ** 0.5;
+            let travel_distance = time_interval * closest_child.speed;
+
+            for(let predator of mahlukat.children){
+                predator.travel_towards(mahlukat.position_x, mahlukat.position_y);    
+            }
+            if(travel_distance > mahlukat_to_child_distance){
+                [closest_child.position_x, closest_child.position_y] = [mahlukat.position_x, mahlukat.position_y];
+                mahlukats.splice(mahlukats.indexOf(mahlukat), 1);
+                closest_child.eaten_today = true;
+            }
+            if(mahlukats.length > 0){
+                for(let predator of mahlukat.children){
+                    predator.assign_target_food(mahlukats);
+                }
+            }
+        }
+
+        document.getElementById("debug").textContent = "Simulated Frames: " + delta_time;
         delta_time++;
         await sleep(1000/simulation_speed);
         renderSimulation(mahlukats, foods);
@@ -138,17 +161,25 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
                 let new_food = new Food(Math.random() * 100, Math.random() * 100);
                 foods.push(new_food);
             }
-            // Handle mahlukat death and reproduction
+            // Handle mahlukat death 
             let mahlukats_copy = Array.from(mahlukats);
             for(let mahlukat of mahlukats_copy){ // Death
                if(!mahlukat.eaten_today){
                     mahlukats.splice(mahlukats.indexOf(mahlukat) , 1);
                }
             }
+            // handle predator death 
+            let predators_copy = Array.from(predators)
+            for(let predator of predators){
+                if(!predator.eaten_today){
+                    predators.splice(predators.indexOf(predator), 1);
+                }
+            }
 
+            // mahlukat reproduction
             for(let mahlukat of mahlukats_copy){
-                if(mahlukat.eaten_today){ // Reproduction! Inheritance (of speed genes) + Mutation
-                    let new_mahlukat = new SpeedMahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed + (Math.random() - 0.5)*0.2); // random coords, +- 0.1 around parents speed
+                if(mahlukat.eaten_today){ // Reproduction! Inheritance of speed genes
+                    let new_mahlukat = new PreyMahlukat(Math.random() * 100, Math.random() * 100, mahlukat.speed); // random coords, +- 0.1 around parents speed
                     mahlukats.push(new_mahlukat);
                     // I spawn the new mahlukat at a random coordinate so they dont immediately have to compete with their parents.
                 }
@@ -157,13 +188,22 @@ async function simulate(simulation_length, startingMahlukats, startingFoods, rep
             for(let mahlukat of mahlukats){
                 mahlukat.assign_target_food(foods);
             }
+            // predator reproduction
+            for(let predator of predators_copy){
+                if(predator.eaten_today){
+                    let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, predator.speed);
+                    predators.push(new_predator);
+                }
+                predator.eaten_today = false;
+            }
 
             day++;
             stats["day"] = day;
             stats["mahlukats"] = mahlukats.length;
             stats["avg_speed"] = avg_speed(mahlukats);
             average_speeds.push(avg_speed(mahlukats));
-            renderGraph(average_speeds, "#speed_chart");
+            renderGraph(mahlukats.length, "#mahlukat_population_chart", title = "Mahlukat Population vs Day", y_label = "Mahlukats");
+            renderGraph(predators.length, "#predator_population_chart", title = "Predator Populaiton vs Day", y_label = "Predators");
             updateStats();
 
             
