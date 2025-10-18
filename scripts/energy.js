@@ -266,19 +266,15 @@ const pauserButton = document.getElementById("pauser");
 pauserButton.addEventListener("click", () => {isPaused = !isPaused});
 
 
-const mutation_amp_slider = document.getElementById("mutationAmplifier");
-let mutationAmplifier = read_input("mutationAmplifier", 1);
-mutation_amp_slider.oninput = function() {
-    mutationAmplifier = this.value;
-}
+
 let simulation_speed = +speedSlider.value;
 const starterButton = document.getElementById("starter");
 let simulation_running = false
-const input_form = document.querySelector(".input_row");
+const starting_input_form = document.querySelector(".input_row");
 
 starterButton.addEventListener("click", () => {
     if(!simulation_running) {
-        if (input_form && !input_form.reportValidity()){
+        if (starting_input_form && !starting_input_form.reportValidity()){
             return;
         }
         let startingMahlukats = read_input("startingMahlukats", 10) 
@@ -293,3 +289,9 @@ starterButton.addEventListener("click", () => {
     }});
 
 
+const mutation_amp_input = document.getElementById("mutationAmplifier");
+let mutation_amplifier = read_input("mutationAmplifier", 1);
+mutation_amp_input.addEventListener('input', () => {
+  if (!mutationInput.reportValidity()) return;
+  mutation_amplifier = mutation_amp_input.valueAsNumber; // numeric, not string
+});
