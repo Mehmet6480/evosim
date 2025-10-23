@@ -28,33 +28,6 @@ function initiate_entities(number_of_foods, number_of_mahlukat){
     }
 }
 
-
-function console_display(){
-    let grid = Array.from({length: 40}, () => Array(40).fill("_ "));
-
-    for(let mahlukat of mahlukats){
-        let x_index = Math.round(mahlukat.position_x / 2.5);
-        let y_index = Math.round(mahlukat.position_y / 2.5);
-
-        grid[y_index][x_index] = "X ";
-    }
-    for(let food of foods){
-        let x_index = Math.round(food.position_x / 2.5);
-        let y_index = Math.round(food.position_y / 2.5);
-
-        grid[y_index][x_index] = "O ";
-    }
-
-    for(let row of grid){
-        let row_str = ""
-        for(let chr of row){
-            row_str += chr
-        }
-    console.log(row_str);
-    }
-}
-
-
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }

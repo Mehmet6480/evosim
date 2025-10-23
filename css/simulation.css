@@ -16,6 +16,10 @@ svg {border : 1px solid #000000 }
     /*  stroke-width: 1.5px; */
 }
 .mahlukat path:hover{ fill: #117602; }
+
+.predator path { fill: #ee7777; }
+.predator path:hover{ fill: #cc4444}
+
 .food circle {fill: #b2bb04; }
 .food circle:hover {fill: #8f9603}
 

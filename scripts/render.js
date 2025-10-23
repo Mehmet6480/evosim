@@ -12,7 +12,7 @@ const mahlukat_tooltip = d3.select("body")
 let last_rendered = 0;
 let total_renders = 0;
 
-export function renderSimulation(mahlukats, foods, max_framerate = 25) {
+export function renderSimulation(mahlukats, foods, predators = [], max_framerate = 25) {
   if ((Date.now() - last_rendered) < (1000/max_framerate)) {
     return;
   }
@@ -130,6 +130,40 @@ export function renderSimulation(mahlukats, foods, max_framerate = 25) {
       .style("left", (px+18) + "px")
       .style("top", (py+18) + "px")
       .html(`Mahlukat ${mahlukats[d].name != null ? mahlukats[d].name : 'no name'}<br>X: ${mahlukats[d].position_x.toFixed(2)}, Y: ${mahlukats[d].position_y.toFixed(2)}<br>Speed: ${mahlukats[d].speed.toFixed(3)}<br>${mahlukats[d].energy != null ? "Energy: " + mahlukats[d].energy.toFixed(2) : ""}<br>${mahlukats[d].days_alive != 0 ? "Days Alive: " + mahlukats[d].days_alive :  "Days Alive: " +  mahlukats[d].days_alive}`);
+      })
+      .on("mouseleave", function() {
+        d3.select(this)
+        .attr("stroke", null)
+        .attr("stroke-width", null);
+        mahlukat_tooltip.style("display", "none");
+      
+      })
+
+    const predator_group = svg.selectAll("g.predator")
+    .data([null])
+    .join("g")
+      .attr("class", "predator");
+
+    const predator_symbol = d3.symbol().type(d3.symbolCross).size(80);
+
+    predator_group.selectAll("path")
+    .data(predators)
+    .join("path")
+      .attr("d", predator_symbol)
+      .attr("transform", d => `translate(${x(d.position_x)}, ${y(d.position_y)}) rotate(45)`)
+      .style("cursor", "pointer") 
+      .on("mouseenter", function (event, d) {
+      // highlight ONLY the hovered circle
+      d3.select(this).attr("stroke", "#222").attr("stroke-width", 1);
+      // show the tooltip
+      mahlukat_tooltip.style("display", "block");
+      })
+      .on("mousemove", function(event, d){
+        const [px, py] = d3.mouse(document.body);
+      mahlukat_tooltip
+      .style("left", (px+18) + "px")
+      .style("top", (py+18) + "px")
+      .html(`Predator ${predators[d].name != null ? predators[d].name + " eater😋" : 'no name'}<br>X: ${predators[d].position_x.toFixed(2)}, Y: ${predators[d].position_y.toFixed(2)}<br>Speed: ${predators[d].speed.toFixed(3)}<br>${predators[d].energy != null ? "Energy: " + predators[d].energy.toFixed(2) : ""}${predators[d].days_alive == true ? "<br>Days Alive: " + predators[d].days_alive :  ""}`);
       })
       .on("mouseleave", function() {
         d3.select(this)

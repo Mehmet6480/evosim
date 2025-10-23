@@ -13,11 +13,20 @@ class PreyMahlukat extends ProtoMahlukat{
         super(x, y, speed);
         this.eaten_today = false;
         this.children = [];
+        this.target_food = null;
     }
 
+    assign_target_food(food_list){
+        let min_idx = super.assign_target_food(food_list, true);
+        this.target_food = food_list[min_idx];
+    }
+    
     find_closest_child(){
+        if(this.children.length === 0){
+            return null;
+        }
         let current_min_distance = Infinity;
-        let closest_predator;
+        let closest_predator = null;
         for(let predator of this.children){
             let current_dist = predator.find_dist(this.position_x, this.position_y);
             if(current_dist < current_min_distance){
@@ -26,7 +35,7 @@ class PreyMahlukat extends ProtoMahlukat{
             }
         }
         return closest_predator;
-    }
+    }   
 }
 
 
@@ -36,6 +45,8 @@ let living_mahlukats = [];
 let foods = [];
 let stats = {day: 1}
 let average_speeds = []
+let mahlukat_populations = [];
+let predator_populations = [];
 
 function initiate_entities(number_of_foods, number_of_mahlukat, number_of_predators){
     for(let i = 0; i < number_of_mahlukat; i++){
@@ -75,6 +86,7 @@ function updateStats() {
 
 let isPaused = false;
 async function simulate(simulation_length, startingMahlukats, startingPredators, startingFoods, replenishing_food_count){
+
     initiate_entities(startingFoods, startingMahlukats, startingPredators);
     stats["mahlukats"] = startingMahlukats;
     stats["predators"] = startingPredators;
@@ -90,6 +102,9 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
         mahlukat.assign_target_food(foods); 
     }
     for(let predator of predators){
+        if(mahlukats.length < 1){
+            break;
+        }
         predator.assign_target_food(mahlukats);
     }
 
@@ -110,12 +125,16 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                 continue;
             }
             let closest_child = food.find_closest_child();
+            if(!closest_child){
+                continue;
+            }
             let food_to_child_distance = (closest_child.find_dist(food.position_x, food.position_y)) ** 0.5;
             let travel_distance = time_interval * closest_child.speed;
             // check if the closest child will reach the food.
 
             for(let mahlukat of food.children){
                 mahlukat.travel_towards(food.position_x, food.position_y);
+                console.log("moved a mahlukat!, time: " + Date.now());
             }
             if(travel_distance > food_to_child_distance){
                 [closest_child.position_x, closest_child.position_y] = [food.position_x, food.position_y];
@@ -133,20 +152,30 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
         let mahlukats_copy = Array.from(mahlukats);
         for(let mahlukat of mahlukats_copy){
             let closest_child = mahlukat.find_closest_child();
+            if(!closest_child){
+                continue;
+            }
             let mahlukat_to_child_distance = (closest_child.find_dist(mahlukat.position_x, mahlukat.position_y)) ** 0.5;
             let travel_distance = time_interval * closest_child.speed;
 
             for(let predator of mahlukat.children){
-                predator.travel_towards(mahlukat.position_x, mahlukat.position_y);    
+                predator.travel_towards(mahlukat.position_x, mahlukat.position_y);
             }
-            if(travel_distance > mahlukat_to_child_distance){
+            if(travel_distance > mahlukat_to_child_distance){ // predators eating mahlukats!
                 [closest_child.position_x, closest_child.position_y] = [mahlukat.position_x, mahlukat.position_y];
+                
                 mahlukats.splice(mahlukats.indexOf(mahlukat), 1);
+                // remove mahlukat from mahlukats list...
+
+                mahlukat.target_food.children.splice(mahlukat.target_food.children.indexOf(this), 1);
+                mahlukat.target_food = null;
+                // remove mahlukat from food pursuer list
                 closest_child.eaten_today = true;
-            }
-            if(mahlukats.length > 0){
-                for(let predator of mahlukat.children){
-                    predator.assign_target_food(mahlukats);
+            
+                if(mahlukats.length > 0){
+                    for(let predator of Array.from(mahlukat.children)){
+                        predator.assign_target_food(mahlukats);
+                    }
                 }
             }
         }
@@ -154,7 +183,7 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
         document.getElementById("debug").textContent = "Simulated Frames: " + delta_time;
         delta_time++;
         await sleep(1000/simulation_speed);
-        renderSimulation(mahlukats, foods);
+        renderSimulation(mahlukats, foods, predators);
 
         if(foods.length == 0){ // End of day
             for(let i = 0; i < replenishing_food_count; i++){ // Replenish food
@@ -185,9 +214,13 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                 }
                 mahlukat.eaten_today = false;
             }
+
+            // reassigning food MAHLUKATS
             for(let mahlukat of mahlukats){
                 mahlukat.assign_target_food(foods);
+                mahlukat.children = [];  // this code is so fragile it is insane i hope it works
             }
+        
             // predator reproduction
             for(let predator of predators_copy){
                 if(predator.eaten_today){
@@ -196,14 +229,21 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                 }
                 predator.eaten_today = false;
             }
+            
+            // assigning food for PREDATORS
+            for(let predator of predators){
+                predator.assign_target_food(mahlukats)
+            }
 
             day++;
             stats["day"] = day;
             stats["mahlukats"] = mahlukats.length;
             stats["avg_speed"] = avg_speed(mahlukats);
             average_speeds.push(avg_speed(mahlukats));
-            renderGraph(mahlukats.length, "#mahlukat_population_chart", title = "Mahlukat Population vs Day", y_label = "Mahlukats");
-            renderGraph(predators.length, "#predator_population_chart", title = "Predator Populaiton vs Day", y_label = "Predators");
+            mahlukat_populations.push(mahlukats.length);
+            predator_populations.push(predators.length);
+            renderGraph(mahlukat_populations, "#mahlukat_population_chart", "Mahlukat Population vs Day", "Mahlukats");
+            renderGraph(predator_populations, "#predator_population_chart", "Predator Population vs Day", "Predators");
             updateStats();
 
             
@@ -225,7 +265,7 @@ speedSlider.oninput = function() {
     simulation_speed = this.value;
 }
 const pauserButton = document.getElementById("pauser");
-pauserButton.addEventListener("click", () => {isPaused = !isPaused; console.log(isPaused)});
+pauserButton.addEventListener("click", () => {isPaused = !isPaused});
 
 let simulation_speed = speedSlider.value;
 const starterButton = document.getElementById("starter");
@@ -244,7 +284,7 @@ starterButton.addEventListener("click", () => {
         let replenishingFoods = read_input("replenishingFoods", 10);
         let startingSpeeds = read_input("startingSpeeds", 0.5);
         console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds);
-        simulate(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds); 
+        simulate(simulationDays, startingMahlukats, 10, startingFoods, replenishingFoods, startingSpeeds); 
         simulation_running = true;
     }});
 

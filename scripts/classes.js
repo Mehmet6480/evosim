@@ -26,7 +26,7 @@ export class ProtoMahlukat extends Entity{
         return `pos x: ${this.position_x}, pos y: ${this.position_y}, speed: ${this.speed}`;
     }
 
-    assign_target_food(food_list, return_food = false){
+    assign_target_food(food_list, return_food = false, debug = false){
         let current_min_dist = Infinity;
         let min_idx = 0;
         for(let i in food_list){
@@ -37,10 +37,6 @@ export class ProtoMahlukat extends Entity{
             }
         }
         food_list[min_idx].children.push(this);
-        
-        if(return_food){
-            return min_idx;
-        }
     }
 
     travel_towards(target_x, target_y){
@@ -77,8 +73,11 @@ export class Food extends Entity{
     }
 
     find_closest_child(){
+        if (this.children.length === 0){
+            return null;
+        }
         let current_min_distance = Infinity;
-        let closest_mahlukat;
+        let closest_mahlukat = null;
         for(let mahlukat of this.children){
             let current_dist = mahlukat.find_dist(this.position_x, this.position_y);
             if(current_dist < current_min_distance){
