@@ -54,7 +54,7 @@ function initiate_entities(number_of_foods, number_of_mahlukat, number_of_predat
         mahlukats.push(new_mahlukat);
     }
     for(let i = 0; i < number_of_predators; i++){
-        let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.2); // 0-100, 0-100, 0.2-0.7
+        let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.1) + 0.45); // 0-100, 0-100, 0.2-0.7
         predators.push(new_predator);
     }
     for(let i = 0; i < number_of_foods; i++){
@@ -167,7 +167,7 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                 mahlukats.splice(mahlukats.indexOf(mahlukat), 1);
                 // remove mahlukat from mahlukats list...
 
-                mahlukat.target_food.children.splice(mahlukat.target_food.children.indexOf(this), 1);
+                mahlukat.target_food.children.splice(mahlukat.target_food.children.indexOf(mahlukat), 1);
                 mahlukat.target_food = null;
                 // remove mahlukat from food pursuer list
                 closest_child.eaten_today = true;

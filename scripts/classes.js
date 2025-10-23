@@ -37,6 +37,10 @@ export class ProtoMahlukat extends Entity{
             }
         }
         food_list[min_idx].children.push(this);
+        
+        if(return_food){
+            return min_idx;
+        }
     }
 
     travel_towards(target_x, target_y){
