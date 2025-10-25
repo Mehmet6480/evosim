@@ -50,6 +50,9 @@ class PreyMahlukat extends ProtoMahlukat{
             mahlukats.splice(mahlukats.indexOf(this) , 1);
             if(this.target_food) {this.target_food.children.splice(this.target_food.children.indexOf(this), 1); }
             this.target_food = null;
+            for(let predator of this.children){
+                predator.assign_target_food(mahlukats);
+            }
             return;
         }
     }
@@ -86,7 +89,7 @@ function initiate_entities(number_of_foods, number_of_mahlukat, number_of_predat
         mahlukats.push(new_mahlukat);
     }
     for(let i = 0; i < number_of_predators; i++){
-        let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.25); // 0-100, 0-100, 0.2-0.7
+        let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.75); // 0-100, 0-100, 0.2-0.7
         predators.push(new_predator);
     }
     for(let i = 0; i < number_of_foods; i++){
@@ -202,7 +205,7 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                 [closest_child.position_x, closest_child.position_y] = [mahlukat.position_x, mahlukat.position_y];
                 
                 mahlukats.splice(mahlukats.indexOf(mahlukat), 1);
-                closest_child.energy += 200;
+                closest_child.energy += 400;
 
                 // remove mahlukat from mahlukats list...
 
@@ -221,6 +224,8 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
         document.getElementById("debug").textContent = "Simulated Frames: " + delta_time;
         delta_time++;
         update_stats();
+        console.log("mahlukats: " + mahlukats);
+        console.log("predators: " + predators);
         await sleep(1000/simulation_speed);
         renderSimulation(mahlukats, foods, predators);
 
