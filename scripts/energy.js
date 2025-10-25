@@ -2,7 +2,7 @@ import { renderSimulation, renderGraph } from "./render.js";
 import { read_input } from "./utils.js";
 import { ProtoMahlukat, Food } from "./classes.js";
 
-class EnergyMahlukat extends ProtoMahlukat{
+export class EnergyMahlukat extends ProtoMahlukat{
 
     constructor(x, y, speed){
         super(x, y, speed);
