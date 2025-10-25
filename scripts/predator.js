@@ -20,7 +20,7 @@ class PredatorMahlukat extends ProtoMahlukat{
 
         this.energy -= (this.speed**2);
         if (this.energy <= 0 ||  this.days_alive > 15){
-            mahlukats.splice(mahlukats.indexOf(this) , 1);
+            predators.splice(predators.indexOf(this) , 1);
             if(this.target_food) {this.target_food.children.splice(this.target_food.children.indexOf(this), 1); }
             this.target_food = null;
             return;
@@ -28,12 +28,13 @@ class PredatorMahlukat extends ProtoMahlukat{
     }
 }
 class PreyMahlukat extends ProtoMahlukat{
-    constructor(x, y, speed){
+    constructor(x, y, speed, reproduced = false){
         super(x, y, speed);
         this.children = [];
         this.energy = 200;
         this.days_alive = 0;
         this.target_food = null;
+        this.reproduced_today = reproduced;
     }
 
     assign_target_food(food_list){
@@ -81,11 +82,11 @@ let predator_populations = [];
 
 function initiate_entities(number_of_foods, number_of_mahlukat, number_of_predators){
     for(let i = 0; i < number_of_mahlukat; i++){
-        let new_mahlukat = new PreyMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.2); // 0-100, 0-100, 0.2-0.7
+        let new_mahlukat = new PreyMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.75); // 0-100, 0-100, 0.2-0.7
         mahlukats.push(new_mahlukat);
     }
     for(let i = 0; i < number_of_predators; i++){
-        let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.1) + 0.5); // 0-100, 0-100, 0.2-0.7
+        let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.25); // 0-100, 0-100, 0.2-0.7
         predators.push(new_predator);
     }
     for(let i = 0; i < number_of_foods; i++){
@@ -169,11 +170,12 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                 foods.splice(foods.indexOf(food), 1);
                 closest_child.energy += 200;
                 
-                if(closest_child.energy > 250){ 
+                if(closest_child.energy > 250 && !closest_child.reproduced_today){ 
                 closest_child.energy -= 100
-                let new_mahlukat = new PreyMahlukat(Math.random() * 100, Math.random() * 100, closest_child.speed);    
+                let new_mahlukat = new PreyMahlukat(Math.random() * 100, Math.random() * 100, closest_child.speed, true);    
                 mahlukats.push(new_mahlukat);
-                new_mahlukat.assign_target_food(foods);
+                if(foods.length > 0){ new_mahlukat.assign_target_food(foods); }
+                closest_child.reproduced_today = true;
                 }
 
                 if(foods.length > 0){
@@ -230,13 +232,16 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
 
             // reassigning food MAHLUKATS
             for(let mahlukat of mahlukats){
+                mahlukat.days_alive++;
                 mahlukat.assign_target_food(foods);
+                mahlukat.reproduced_today = false;
                 mahlukat.children = [];  // this code is so fragile it is insane i hope it works
             }
          
             let predators_copy = Array.from(predators)
             // predator reproduction
             for(let predator of predators_copy){
+                predator.days_alive++;
                 if(predator.energy > 250){ 
                     predator.energy -= 100
                     let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, predator.speed);
