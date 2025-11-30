@@ -140,6 +140,25 @@ let predator_populations = [];
 function build_predator_targets(){
     return [...mahlukats, ...foods];
 }
+function reassign_idle_targets(){
+    if(foods.length > 0){
+        for(let mahlukat of mahlukats){
+            if(!mahlukat.target_food){
+                mahlukat.assign_target_food(foods);
+            }
+        }
+    }
+
+    const predator_targets = build_predator_targets();
+    if(predator_targets.length > 0){
+        for(let predator of predators){
+            if(!predator.target_food){
+                predator.assign_target(predator_targets);
+            }
+        }
+    }
+}
+
 
 function initiate_entities(number_of_foods, number_of_mahlukat, number_of_predators){
     for(let i = 0; i < number_of_mahlukat; i++){
@@ -205,6 +224,10 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
 
         while(isPaused){
             await sleep(10);
+        }
+        reassign_idle_targets();
+        for(let mahlukat of mahlukats){
+            console.log(`mahlukat at: ${mahlukat.position_x},${mahlukat.position_y} targeting food at ${mahlukat.target_food.position_x},${mahlukat.target_food.position_y} - name: ${mahlukat.name}`);
         }
         let foods_copy = Array.from(foods);
         
@@ -319,8 +342,9 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                 }
             
             // assigning food for PREDATORS
+            const predator_targets = build_predator_targets();
             for(let predator of predators){
-                predator.assign_target_food(mahlukats)
+                predator.assign_target_food(predator_targets);
             }
 
             day++;
