@@ -10,13 +10,54 @@ class PredatorMahlukat extends ProtoMahlukat{
         this.target_food = null;
     }
 
+    clear_target(){
+        if(!this.target_food){
+            return;
+        }
+
+        const child_idx = this.target_food.children.indexOf(this);
+        if(child_idx >= 0){
+            this.target_food.children.splice(child_idx, 1);
+        }
+        this.target_food = null;
+    }
+
+    assign_target(target_list){
+        if(!target_list || target_list.length === 0){
+            this.clear_target();
+            return;
+        }
+        this.clear_target();
+        let min_idx = super.assign_target_food(target_list, true);
+        this.target_food = target_list[min_idx];
+    }
+
     assign_target_food(food_list){
+        if(this.target_food){
+            const current_index = this.target_food.children.indexOf(this);
+            if(current_index !== -1){
+                this.target_food.children.splice(current_index, 1);
+            }
+        }
+        this.stalled_ticks = 0;
         let min_idx = super.assign_target_food(food_list, true);
         this.target_food = food_list[min_idx];
     }
 
     travel_towards(target_x, target_y){
+        const distance_before = (this.find_dist(target_x, target_y)) ** 0.5;
         super.travel_towards(target_x, target_y);
+        const distance_after = (this.find_dist(target_x, target_y)) ** 0.5;
+
+        if(distance_after >= distance_before - 0.05){
+            this.stalled_ticks++;
+        } else {
+            this.stalled_ticks = 0;
+        }
+
+        if(this.stalled_ticks > 20){
+            this.reassign_target();
+        }
 
         this.energy -= (this.speed**2);
         if (this.energy <= 0 ||  this.days_alive > 15){
@@ -24,6 +65,19 @@ class PredatorMahlukat extends ProtoMahlukat{
             if(this.target_food) {this.target_food.children.splice(this.target_food.children.indexOf(this), 1); }
             this.target_food = null;
             return;
+        }
+    }
+    reassign_target(){
+        if(this.target_food){
+            const current_index = this.target_food.children.indexOf(this);
+            if(current_index !== -1){
+                this.target_food.children.splice(current_index, 1);
+            }
+            this.target_food = null;
+        }
+        this.stalled_ticks = 0;
+        if(mahlukats.length > 0){
+            this.assign_target_food(mahlukats);
         }
     }
 }
@@ -51,7 +105,7 @@ class PreyMahlukat extends ProtoMahlukat{
             if(this.target_food) {this.target_food.children.splice(this.target_food.children.indexOf(this), 1); }
             this.target_food = null;
             for(let predator of this.children){
-                predator.assign_target_food(mahlukats);
+                predator.assign_target_food(build_predator_targets());
             }
             return;
         }
@@ -82,6 +136,10 @@ let stats = {day: 1}
 let average_speeds = []
 let mahlukat_populations = [];
 let predator_populations = [];
+
+function build_predator_targets(){
+    return [...mahlukats, ...foods];
+}
 
 function initiate_entities(number_of_foods, number_of_mahlukat, number_of_predators){
     for(let i = 0; i < number_of_mahlukat; i++){
@@ -135,10 +193,12 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
         mahlukat.assign_target_food(foods); 
     }
     for(let predator of predators){
-        if(mahlukats.length < 1){
+        const predator_targets = build_predator_targets();
+        
+        if(predator_targets.length < 1){
             break;
         }
-        predator.assign_target_food(mahlukats);
+        predator.assign_target_food(predator_targets);
     }
 
     while (day <= simulation_length){
@@ -165,25 +225,28 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
             let travel_distance = time_interval * closest_child.speed;
             // check if the closest child will reach the food.
 
-            for(let mahlukat of food.children){
-                mahlukat.travel_towards(food.position_x, food.position_y);
+            for(let pursuer of food.children){
+                pursuer.travel_towards(food.position_x, food.position_y);
             }
             if(travel_distance > food_to_child_distance){
                 [closest_child.position_x, closest_child.position_y] = [food.position_x, food.position_y];
                 foods.splice(foods.indexOf(food), 1);
                 closest_child.energy += 200;
                 
-                if(closest_child.energy > 250 && !closest_child.reproduced_today){ 
-                closest_child.energy -= 100
-                let new_mahlukat = new PreyMahlukat(Math.random() * 100, Math.random() * 100, closest_child.speed, true);    
-                mahlukats.push(new_mahlukat);
-                if(foods.length > 0){ new_mahlukat.assign_target_food(foods); }
-                closest_child.reproduced_today = true;
+            if(closest_child instanceof PreyMahlukat && closest_child.energy > 250 && !closest_child.reproduced_today){
+                    closest_child.energy -= 100
+                    let new_mahlukat = new PreyMahlukat(Math.random() * 100, Math.random() * 100, closest_child.speed, true);
+                    mahlukats.push(new_mahlukat);
+                    if(foods.length > 0){ new_mahlukat.assign_target_food(foods); }
+                    closest_child.reproduced_today = true;
                 }
 
-                if(foods.length > 0){
-                    for(let mahlukat of food.children){
-                        mahlukat.assign_target_food(foods);
+                const predator_targets = build_predator_targets();
+                for(let pursuer of food.children){
+                    if(pursuer instanceof PreyMahlukat){
+                        if(foods.length > 0){ pursuer.assign_target_food(foods); }
+                    } else if(pursuer instanceof PredatorMahlukat){
+                        if(predator_targets.length > 0){ pursuer.assign_target(predator_targets); }
                     }
                 }
 
@@ -205,7 +268,7 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                 [closest_child.position_x, closest_child.position_y] = [mahlukat.position_x, mahlukat.position_y];
                 
                 mahlukats.splice(mahlukats.indexOf(mahlukat), 1);
-                closest_child.energy += 400;
+                closest_child.energy += 200;
 
                 // remove mahlukat from mahlukats list...
 
@@ -213,9 +276,10 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                 mahlukat.target_food = null;
                 // remove mahlukat from food pursuer list
             
-                if(mahlukats.length > 0){
+                const predator_targets_from_kill = build_predator_targets();
+                if(predator_targets_from_kill.length > 0){
                     for(let predator of Array.from(mahlukat.children)){
-                        predator.assign_target_food(mahlukats);
+                        predator.assign_target(predator_targets_from_kill);
                     }
                 }
             }
