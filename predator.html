@@ -34,8 +34,8 @@
 
     <form class = "input_row" action = "#" >
         <div class = "input_field">
-            <label for = "simulationTicks">Simulation Ticks</label>
-            <input id = "simulationTicks" type = "number" value = "2000" min = "25" max = "250000" required>
+            <label for = "simulationDays">Simulation Days</label>
+            <input id = "simulationDays" type = "number" value = "2000" min = "25" max = "250000" required>
         </div>
         <div class = "input_field">
             <label for = "startingMahlukats">Starting Mahlukats</label>
@@ -46,23 +46,14 @@
             <input id = "startingFoods" type = "number" value = "12" min = "1" max = "100" required>
         </div>
         <div class = "input_field">
-            <label for = "replenishingFoods">Food Regeneration Frequency</label>
-            <input id = "replenishingFoods" type = "number" value = "5" min = "1" max = "25" required>
+            <label for = "replenishingFoods">Replenishing Foods</label>
+            <input id = "replenishingFoods" type = "number" value = "15" min = "1" max = "100" required>
         </div>
-        <div class = "input_field">
-            <label for = "startingSpeeds">Avg Starting Speeds</label>
-            <input id = "startingSpeeds" type = "number" value = "0.5" min = "0.1" max = "10" step = "0.01" required>
-        </div>
+
 
     </form>
     </form>
-    <p class = "normal_text"><br>Dynamic Parameters</p>
-    <form class = "input_row" action = "#" >
-        <div class = "input_field">
-            <label for = "mutationAmplifier">Mutation Amplifier</label>
-            <input id = "mutationAmplifier" type = "number" value = 1 min = 0 max = 30 step = "0.1" required> 
-        </div>
-    </form>
+    
     <div class = "above_chart_text">
     <p class = "normal_text" id = "stats">Start a simulation! </p>
     </div>
@@ -82,7 +73,7 @@
         <div class = "sliderWrap">
             <input type= "range" min = "1" max = "500" value = "10" id = "simulation_speed" class = "slider">
             <div class = "sliderDescription">
-            <p>Target simulation speed (ticks/s): <span id = "value"></span></p>
+            <p>Target simulation speed (Days/s): <span id = "value"></span></p>
             </div>
         </div>    
     </div>
