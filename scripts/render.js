@@ -129,8 +129,7 @@ export function renderSimulation(mahlukats, foods, predators = [], max_framerate
       mahlukat_tooltip
       .style("left", (px+18) + "px")
       .style("top", (py+18) + "px")
-      .html(`Mahlukat ${mahlukats[d].name != null ? mahlukats[d].name : 'no name'}<br>X: ${mahlukats[d].position_x.toFixed(2)}, Y: ${mahlukats[d].position_y.toFixed(2)}<br>Speed: ${mahlukats[d].speed.toFixed(3)}<br>${mahlukats[d].energy != null ? "Energy: " + mahlukats[d].energy.toFixed(2) : ""}<br>${mahlukats[d].days_alive != 0 ? "Days Alive: " + mahlukats[d].days_alive :  "Days Alive: " +  mahlukats[d].days_alive}`);
-      })
+      .html(`Mahlukat ${mahlukats[d].name != null ? mahlukats[d].name : 'no name'}<br>X: ${mahlukats[d].position_x.toFixed(2)}, Y: ${mahlukats[d].position_y.toFixed(2)}<br>Speed: ${mahlukats[d].speed.toFixed(3)}<br>${mahlukats[d].energy != null ? "Energy: " + mahlukats[d].energy.toFixed(2) : ""}<br>${mahlukats[d].ticks_alive != 0 ? "Ticks Alive: " + mahlukats[d].ticks_alive :  "Ticks Alive: " +  mahlukats[d].ticks_alive}`);      })
       .on("mouseleave", function() {
         d3.select(this)
         .attr("stroke", null)
@@ -163,8 +162,7 @@ export function renderSimulation(mahlukats, foods, predators = [], max_framerate
       mahlukat_tooltip
       .style("left", (px+18) + "px")
       .style("top", (py+18) + "px")
-      .html(`Predator ${predators[d].name != null ? predators[d].name + " eater😋" : 'no name'}<br>X: ${predators[d].position_x.toFixed(2)}, Y: ${predators[d].position_y.toFixed(2)}<br>Speed: ${predators[d].speed.toFixed(3)}<br>${predators[d].energy != null ? "Energy: " + predators[d].energy.toFixed(2) : ""}${predators[d].days_alive == true ? "<br>Days Alive: " + predators[d].days_alive :  ""}`);
-      })
+      .html(`Predator ${predators[d].name != null ? predators[d].name + " eater😋" : 'no name'}<br>X: ${predators[d].position_x.toFixed(2)}, Y: ${predators[d].position_y.toFixed(2)}<br>Speed: ${predators[d].speed.toFixed(3)}<br>${predators[d].energy != null ? "Energy: " + predators[d].energy.toFixed(2) : ""}${predators[d].ticks_alive ? "<br>Ticks Alive: " + predators[d].ticks_alive :  ""}`);      })
       .on("mouseleave", function() {
         d3.select(this)
         .attr("stroke", null)
@@ -346,7 +344,7 @@ export function renderGraph(raw_data, container = "#speed_chart", title = "Avera
     .style("display", "block")
     .style("left",  (screenPoint.x + 49) + "px")  // small offset
     .style("top",   (screenPoint.y + 33) + "px")
-    .html(`Day: ${state.focus_index}<br>${y_label}: ${data[state.focus_index].toFixed(3)}`);
+    .html(`${x_label}: ${state.focus_index}<br>${y_label}: ${data[state.focus_index].toFixed(3)}`);
     }
     
     const listeningRectangle = g.append("rect")
@@ -379,7 +377,7 @@ export function renderGraph(raw_data, container = "#speed_chart", title = "Avera
     .style("display", "block")
     .style("left", `${screenPoint.x + 49}px`)
     .style("top", `${screenPoint.y + 33}px`)
-    .html(`<text>Day: ${i}<br>${y_label}: ${d.toFixed(3)}</text>`);
+    .html(`<text>${x_label}: ${i}<br>${y_label}: ${d.toFixed(3)}</text>`);
         })
 
     listeningRectangle.on("mouseleave", function () {
