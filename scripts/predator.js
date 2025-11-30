@@ -143,8 +143,14 @@ function build_predator_targets(){
 function reassign_idle_targets(){
     if(foods.length > 0){
         for(let mahlukat of mahlukats){
-            if(!mahlukat.target_food){
+            if(!mahlukat.target_food || !foods.includes(mahlukat.target_food)){
                 mahlukat.assign_target_food(foods);
+            }
+        }
+    } else {
+        for(let mahlukat of mahlukats){
+            if(mahlukat.target_food){
+                mahlukat.clear_target();
             }
         }
     }
@@ -152,8 +158,14 @@ function reassign_idle_targets(){
     const predator_targets = build_predator_targets();
     if(predator_targets.length > 0){
         for(let predator of predators){
-            if(!predator.target_food){
+            if(!predator.target_food || !predator_targets.includes(predator.target_food)){
                 predator.assign_target(predator_targets);
+            }
+        }
+    } else {
+        for(let predator of predators){
+            if(predator.target_food){
+                predator.clear_target();
             }
         }
     }
