@@ -99,7 +99,7 @@ class PreyMahlukat extends ProtoMahlukat{
     travel_towards(target_x, target_y){
         super.travel_towards(target_x, target_y);
 
-        this.energy -= (this.speed**2);
+        this.energy -= (this.speed**2*0.5);
         if (this.energy <= 0 ||  this.days_alive > 15){
             mahlukats.splice(mahlukats.indexOf(this) , 1);
             if(this.target_food) {this.target_food.children.splice(this.target_food.children.indexOf(this), 1); }
@@ -275,6 +275,7 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
                     
                     let new_mahlukat2 = new PreyMahlukat(Math.random() * 100, Math.random() * 100, closest_child.speed, true);
                     mahlukats.push(new_mahlukat2)
+
                     if(foods.length > 0){ 
                         new_mahlukat.assign_target_food(foods);
                         new_mahlukat2.assign_target_food(foods);
@@ -352,8 +353,8 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
             // predator reproduction
             for(let predator of predators_copy){
                 predator.days_alive++;
-                if(predator.energy > 250){ 
-                    predator.energy -= 100
+                if(predator.energy > 300){ 
+                    predator.energy -= 150
                     let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, predator.speed);
                     predators.push(new_predator);
                     }
@@ -410,10 +411,10 @@ starterButton.addEventListener("click", () => {
         }
         let startingMahlukats = read_input("startingMahlukats", 10) 
         let simulationDays = read_input("simulationDays", 10);
-        let startingFoods = read_input("startingFoods", 10); // Default starting values
+        let startingFoods = read_input("startingFoods", 10); // default starting values
         let replenishingFoods = read_input("replenishingFoods", 10);
-        console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods, startingSpeeds);
-        simulate(simulationDays, startingMahlukats, 10, startingFoods, replenishingFoods, startingSpeeds); 
+        console.log(simulationDays, startingMahlukats, startingFoods, replenishingFoods);
+        simulate(simulationDays, startingMahlukats, 10, startingFoods, replenishingFoods); 
         simulation_running = true;
     }});
 
