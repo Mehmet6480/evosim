@@ -1,4 +1,4 @@
-import { renderSimulation, renderGraph } from "./render.js";
+import { renderSimulation, renderGraph, renderMultiGraph } from "./render.js";
 import { read_input } from "./utils.js";
 import { ProtoMahlukat, Food } from "./classes.js"; 
 
@@ -59,7 +59,7 @@ class PredatorMahlukat extends ProtoMahlukat{
             this.reassign_target();
         }
 
-        this.energy -= (this.speed**2*3.5);
+        this.energy -= (this.speed**2*3.4);
         if (this.energy <= 0 ||  this.days_alive > 15){
             predators.splice(predators.indexOf(this) , 1);
             if(this.target_food) {this.target_food.children.splice(this.target_food.children.indexOf(this), 1); }
@@ -134,8 +134,7 @@ let predators = [];
 let foods = [];
 let stats = {day: 1}
 let average_speeds = []
-let mahlukat_populations = [];
-let predator_populations = [];
+
 
 function build_predator_targets(){
     return [...mahlukats, ...foods];
@@ -178,7 +177,7 @@ function initiate_entities(number_of_foods, number_of_mahlukat, number_of_predat
         mahlukats.push(new_mahlukat);
     }
     for(let i = 0; i < number_of_predators; i++){
-        let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.31); // 0-100, 0-100, 0.2-0.7
+        let new_predator = new PredatorMahlukat(Math.random() * 100, Math.random() * 100, (Math.random() * 0.5) + 0.32); // 0-100, 0-100, 0.2-0.7
         predators.push(new_predator);
     }
     for(let i = 0; i < number_of_foods; i++){
@@ -214,8 +213,8 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
     stats["predators"] = startingPredators;
     stats["avg_speed"] = avg_speed(mahlukats);
     update_stats();
-    let data = [];
-
+    let mahlukat_populations = [];
+    let predator_populations = [];
     let delta_time = 0;
     let day = 1;
     let time_interval = 1;
@@ -373,11 +372,13 @@ async function simulate(simulation_length, startingMahlukats, startingPredators,
             average_speeds.push(avg_speed(mahlukats));
             mahlukat_populations.push(mahlukats.length);
             predator_populations.push(predators.length);
-            renderGraph(mahlukat_populations, "#mahlukat_population_chart", "Mahlukat Population vs Day", "Mahlukats");
-            renderGraph(predator_populations, "#predator_population_chart", "Predator Population vs Day", "Predators");
-            update_stats();
-
-            
+            //renderGraph(mahlukat_populations, "#mahlukat_population_chart", "Mahlukat Population vs Day", "Mahlukats");
+            //renderGraph(predator_populations, "#predator_population_chart", "Predator Population vs Day", "Predators");
+            renderMultiGraph([
+                { label: "Mahlukats", values: mahlukat_populations, color: "steelblue" },
+                { label: "Predators", values: predator_populations, color: "#d95f02" }
+            ], "#population_chart", "Population vs Day", "Population", "Day");
+            update_stats();            
         }
     }
     simulation_running = false;

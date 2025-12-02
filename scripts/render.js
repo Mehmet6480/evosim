@@ -129,7 +129,7 @@ export function renderSimulation(mahlukats, foods, predators = [], max_framerate
       mahlukat_tooltip
       .style("left", (px+18) + "px")
       .style("top", (py+18) + "px")
-      .html(`Mahlukat ${mahlukats[d].name != null ? mahlukats[d].name : 'no name'}<br>X: ${mahlukats[d].position_x.toFixed(2)}, Y: ${mahlukats[d].position_y.toFixed(2)}<br>Speed: ${mahlukats[d].speed.toFixed(3)}<br>${mahlukats[d].energy != null ? "Energy: " + mahlukats[d].energy.toFixed(2) : ""}<br>${mahlukats[d].ticks_alive != 0 ? "Ticks Alive: " + mahlukats[d].ticks_alive :  "Ticks Alive: " +  mahlukats[d].ticks_alive}`);      })
+      .html(`Mahlukat ${mahlukats[d].name != null ? mahlukats[d].name : 'no name'}<br>X: ${mahlukats[d].position_x.toFixed(2)}, Y: ${mahlukats[d].position_y.toFixed(2)}<br>Speed: ${mahlukats[d].speed.toFixed(3)}<br>${mahlukats[d].energy != null ? "Energy: " + mahlukats[d].energy.toFixed(2) : ""}<br>${mahlukats[d].days_alive != 0 ? "Days Alive: " + mahlukats[d].days_alive :  "Days Alive: " +  mahlukats[d].days_alive}`);      })
       .on("mouseleave", function() {
         d3.select(this)
         .attr("stroke", null)
@@ -385,4 +385,187 @@ export function renderGraph(raw_data, container = "#speed_chart", title = "Avera
     state.mouse_inside = false;
     state.focus_index = null;
     tooltip.style("display", "none");  });  
+}
+
+export function renderMultiGraph(seriesList, container = "#population_chart", title = "Population vs Day", y_label = "Population", x_label = "Day") {
+  if (!Array.isArray(seriesList) || seriesList.length === 0) {
+    return;
+  }
+
+  const root = d3.select(container);
+  if (root.empty()) {
+    console.warn(`renderMultiLineGraph: container '${container}' not found`);
+    return;
+  }
+
+  const maxLength = Math.max(...seriesList.map(series => (series?.values || []).length));
+  if (maxLength === 0) {
+    root.selectAll("*").remove();
+    return;
+  }
+
+  const APPROX_DATAPOINTS = 500;
+  const compressionFactor = Math.max(1, Math.ceil(maxLength / APPROX_DATAPOINTS));
+  const compressSeries = (values = []) => {
+    if (compressionFactor === 1) {
+      return [...values];
+    }
+    const compressed = [];
+    for (let i = 0; i < values.length; i += compressionFactor) {
+      const slice = values.slice(i, i + compressionFactor);
+      compressed.push(d3.mean(slice));
+    }
+    return compressed;
+  };
+
+  const seriesData = seriesList
+    .map((series, index) => ({
+      label: series.label || `Series ${index + 1}`,
+      color: series.color || d3.schemeSet2[index % d3.schemeSet2.length],
+      data: compressSeries(series.values || [])
+    }))
+    .filter(series => series.data.length > 0);
+
+  if (seriesData.length === 0) {
+    root.selectAll("*").remove();
+    return;
+  }
+
+  const yMax = d3.max(seriesData, series => d3.max(series.data.filter(d => d != null)));
+  if (!Number.isFinite(yMax)) {
+    root.selectAll("*").remove();
+    return;
+  }
+
+  const vbW = 500, vbH = 500;
+  const margin = { top: 40, right: 30, bottom: 40, left: 60 };
+  const width = vbW - margin.left - margin.right;
+  const height = vbH - margin.top - margin.bottom;
+
+  root.selectAll("*").remove();
+
+  const svg = root.append("svg")
+    .attr("class", "chart")
+    .attr("viewBox", `0 0 ${vbW} ${vbH}`);
+
+  const g = svg.append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleLinear()
+    .domain([0, Math.max(0, maxLength - 1)])
+    .nice()
+    .range([0, width]);
+
+  const y = d3.scaleLinear()
+    .domain([0, yMax])
+    .nice()
+    .range([height, 0]);
+
+  const xAxis = d3.axisBottom(x)
+    .ticks(4)
+    .tickFormat(d3.format("d"));
+  const yAxis = d3.axisLeft(y)
+    .ticks(10);
+
+  g.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .style("font-size", "14px")
+    .call(xAxis)
+    .call(g => g.select(".domain").remove())
+    .selectAll(".tick line")
+    .style("stroke-opacity", 0);
+
+  g.append("g")
+    .style("font-size", "14px")
+    .call(yAxis
+      .tickSize(0)
+      .tickPadding(10)
+    )
+    .call(g => g.select(".domain").remove());
+
+  g.selectAll("xGrid")
+    .data(x.ticks().slice(1))
+    .join("line")
+    .attr("x1", d => x(d))
+    .attr("x2", d => x(d))
+    .attr("y1", 0)
+    .attr("y2", height)
+    .attr("stroke", "#d0d0d0")
+    .attr("stroke-width", .5);
+
+  g.selectAll("yGrid")
+    .data(y.ticks().slice(1))
+    .join("line")
+    .attr("x1", 0)
+    .attr("x2", width)
+    .attr("y1", d => y(d))
+    .attr("y2", d => y(d))
+    .attr("stroke", "#d0d0d0")
+    .attr("stroke-width", .4);
+
+  g.append("text")
+    .attr("class", "chart-title")
+    .attr("x", width / 2)
+    .attr("text-anchor", "middle")
+    .attr("y", margin.top - 50)
+    .style("font-size", "16px")
+    .text(title);
+
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margin.left)
+    .attr("x", 0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .style("font-size", "16px")
+    .style("fill", "#777")
+    .text(y_label);
+
+  g.append("text")
+    .attr("y", height + margin.bottom - 6)
+    .attr("x", width / 2)
+    .style("text-anchor", "middle")
+    .style("font-size", "16px")
+    .style("fill", "#777")
+    .text(x_label);
+
+  const lineGenerator = d3.line()
+    .x((d, i) => x(i * compressionFactor))
+    .y(d => y(d));
+
+  seriesData.forEach(series => {
+    g.append("path")
+      .datum(series.data)
+      .attr("fill", "none")
+      .attr("stroke", series.color)
+      .attr("stroke-width", 2)
+      .attr("d", lineGenerator);
+  });
+
+  const legend = g.append("g")
+    .attr("transform", `translate(${20},${5})`);
+
+  legend.selectAll("g.legend-item")
+    .data(seriesData)
+    .join("g")
+    .attr("class", "legend-item")
+    .attr("transform", (d, i) => `translate(0, ${i * 20})`)
+    .each(function (d) {
+      const item = d3.select(this);
+
+      item.append("line")
+        .attr("x1", 0)
+        .attr("x2", 14)
+        .attr("y1", 6)
+        .attr("y2", 6)
+        .attr("stroke", d.color)
+        .attr("stroke-width", 3);
+
+      item.append("text")
+        .attr("x", 20)
+        .attr("y", 9)
+        .style("font-size", "12px")
+        .style("fill", d.color)
+        .text(d.label);
+    });
 }
