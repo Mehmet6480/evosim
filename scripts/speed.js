@@ -1,5 +1,5 @@
 import { renderSimulation, renderGraph } from "./render.js";
-import { read_input } from "./utils.js";
+import { read_input, attach_config_exporter } from "./utils.js";
 import { ProtoMahlukat, Food } from "./classes.js"; 
 
 export class SpeedMahlukat extends ProtoMahlukat{
@@ -165,6 +165,8 @@ const starterButton = document.getElementById("starter");
 let simulation_running = false
 
 const input_form = document.querySelector(".input_row");
+
+attach_config_exporter("exportConfig",["simulationDays", "startingMahlukats", "startingFoods", "replenishingFoods", "startingSpeeds", "mutationAmplifier"],"configStatus");
 
 starterButton.addEventListener("click", () => {
     if(!simulation_running) {
