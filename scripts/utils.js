@@ -96,45 +96,6 @@ export function build_config_string(configIds){
         .filter((value) => value !== null && value !== undefined && value !== "");
     return values.join("-");
 }
-
-export function attach_config_exporter(buttonId, configIds, statusElementId){
-    const exportButton = document.getElementById(buttonId);
-    if(!exportButton){
-        return;
-    }
-
-    const statusElement = statusElementId ? document.getElementById(statusElementId) : null;
-    let statusTimeout;
-
-    exportButton.addEventListener("click", async () => {
-        const configString = build_config_string(configIds);
-        try {
-            await copy_text_to_clipboard(configString);
-            if(statusElement){
-                if(statusTimeout){
-                    clearTimeout(statusTimeout);
-                }
-                statusElement.classList.remove("error");
-                statusElement.classList.add("success");
-                statusElement.textContent = "Export successful";
-                statusElement.style.visibility = "visible";
-                statusTimeout = setTimeout(() => {
-                    statusElement.textContent = "";
-                    statusElement.classList.remove("success");
-                    statusElement.style.visibility = "hidden";
-                    statusTimeout = null;
-                }, 2000);
-            }
-        } catch(err){
-            if(statusElement){
-                statusElement.classList.remove("success");
-                statusElement.classList.add("error");
-                statusElement.textContent = "Failed to copy config to clipboard.";
-                statusElement.style.visibility = "visible";
-            }
-        }
-    });
-}
 function show_status(statusElement, type, message){
     if(!statusElement){
         return;
@@ -147,6 +108,60 @@ function show_status(statusElement, type, message){
     statusElement.style.visibility = message ? "visible" : "hidden";
 }
 
+function create_status_manager(statusElement){
+    let statusTimeout;
+
+    const clear_status = () => {
+        show_status(statusElement, "", "");
+        statusTimeout = null;
+    };
+
+    return {
+        show(type, message, autoClear = true){
+            if(!statusElement){
+                return;
+            }
+
+            if(statusTimeout){
+                clearTimeout(statusTimeout);
+                statusTimeout = null;
+            }
+
+            show_status(statusElement, type, message);
+
+            if(autoClear && message){
+                statusTimeout = setTimeout(clear_status, 2000);
+            }
+        },
+        clear(){
+            if(statusTimeout){
+                clearTimeout(statusTimeout);
+                statusTimeout = null;
+            }
+            clear_status();
+        }
+    };
+}
+export function attach_config_exporter(buttonId, configIds, statusElementId){
+    const exportButton = document.getElementById(buttonId);
+    if(!exportButton){
+        return;
+    }
+
+    const statusElement = statusElementId ? document.getElementById(statusElementId) : null;
+    const statusManager = create_status_manager(statusElement);
+
+    exportButton.addEventListener("click", async () => {
+        const configString = build_config_string(configIds);
+        try {
+            await copy_text_to_clipboard(configString);
+            statusManager.show("success", "Export successful");
+        } catch(err){
+            statusManager.show("error", "Failed to copy config to clipboard.", false);
+        }
+    });
+}
+
 export function attach_config_importer(buttonId, inputId, configIds, statusElementId){
     const importButton = document.getElementById(buttonId);
     const inputElement = document.getElementById(inputId);
@@ -155,6 +170,7 @@ export function attach_config_importer(buttonId, inputId, configIds, statusEleme
     }
 
     const statusElement = statusElementId ? document.getElementById(statusElementId) : null;
+    const statusManager = create_status_manager(statusElement);
 
     importButton.addEventListener("click", () => {
         const rawValue = inputElement.value.trim();
@@ -164,7 +180,7 @@ export function attach_config_importer(buttonId, inputId, configIds, statusEleme
         const allPartsPresent =
             parts.length === configIds.length && parts.every((p) => p !== "");
         if(!allPartsPresent){
-            show_status(statusElement, "error", "Invalid config format.");
+            statusManager.show("error", "Invalid config format.");            
             return;
         }
 
@@ -191,7 +207,7 @@ export function attach_config_importer(buttonId, inputId, configIds, statusEleme
         });
 
         if(hasInvalidValue){
-            show_status(statusElement, "error", "Invalid config format.");
+            statusManager.show("error", "Invalid input values.");
             return;
         }
 
@@ -202,6 +218,6 @@ export function attach_config_importer(buttonId, inputId, configIds, statusEleme
             }
         });
 
-        show_status(statusElement, "success", "Import successful.");
+        statusManager.show("success", "Import successful.");
     });
 }
