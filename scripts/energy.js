@@ -1,5 +1,5 @@
 import { renderSimulation, renderGraph } from "./render.js";
-import { read_input } from "./utils.js";
+import { read_input, attach_config_exporter, attach_config_importer } from "./utils.js";
 import { ProtoMahlukat, Food } from "./classes.js";
 
 export class EnergyMahlukat extends ProtoMahlukat{
@@ -194,6 +194,18 @@ let simulation_speed = +speedSlider.value;
 const starterButton = document.getElementById("starter");
 let simulation_running = false
 const starting_input_form = document.querySelector(".input_row");
+
+const energyConfigIds = [
+  "simulationDays",
+  "startingMahlukats",
+  "startingFoods",
+  "replenishingFoods",
+  "startingSpeeds",
+  "mutationAmplifier",
+];
+
+attach_config_exporter("exportConfig", energyConfigIds, "configStatus");
+attach_config_importer("importConfig", "importConfigInput", energyConfigIds, "configStatus");
 
 starterButton.addEventListener("click", () => {
     if(!simulation_running) {

@@ -135,3 +135,73 @@ export function attach_config_exporter(buttonId, configIds, statusElementId){
         }
     });
 }
+function show_status(statusElement, type, message){
+    if(!statusElement){
+        return;
+    }
+    statusElement.classList.remove("success", "error");
+    if(type){
+        statusElement.classList.add(type);
+    }
+    statusElement.textContent = message;
+    statusElement.style.visibility = message ? "visible" : "hidden";
+}
+
+export function attach_config_importer(buttonId, inputId, configIds, statusElementId){
+    const importButton = document.getElementById(buttonId);
+    const inputElement = document.getElementById(inputId);
+    if(!importButton || !inputElement){
+        return;
+    }
+
+    const statusElement = statusElementId ? document.getElementById(statusElementId) : null;
+
+    importButton.addEventListener("click", () => {
+        const rawValue = inputElement.value.trim();
+        const parts = rawValue.split("-");
+        const inputs = configIds.map((id) => document.getElementById(id));
+
+        const allPartsPresent =
+            parts.length === configIds.length && parts.every((p) => p !== "");
+        if(!allPartsPresent){
+            show_status(statusElement, "error", "Invalid config format.");
+            return;
+        }
+
+        const hasInvalidValue = parts.some((part, idx) => {
+            const input = inputs[idx];
+            const numeric = Number(part);
+            if(!Number.isFinite(numeric)){
+                return true;
+            }
+            if(!input){
+                return false;
+            }
+
+            const min = input.getAttribute("min");
+            const max = input.getAttribute("max");
+
+            if(min !== null && min !== "" && numeric < Number(min)){
+                return true;
+            }
+            if(max !== null && max !== "" && numeric > Number(max)){
+                return true;
+            }
+            return false;
+        });
+
+        if(hasInvalidValue){
+            show_status(statusElement, "error", "Invalid config format.");
+            return;
+        }
+
+        inputs.forEach((input, idx) => {
+            if(input){
+                input.value = parts[idx];
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        });
+
+        show_status(statusElement, "success", "Import successful.");
+    });
+}

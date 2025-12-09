@@ -1,5 +1,5 @@
 import { renderSimulation, renderGraph, renderMultiGraph } from "./render.js";
-import { read_input } from "./utils.js";
+import { read_input, attach_config_exporter, attach_config_importer } from "./utils.js";
 import { ProtoMahlukat, Food } from "./classes.js"; 
 
 class PredatorMahlukat extends ProtoMahlukat{
@@ -404,6 +404,16 @@ const starterButton = document.getElementById("starter");
 let simulation_running = false
 
 const input_form = document.querySelector(".input_row");
+
+const predatorConfigIds = [
+  "simulationDays",
+  "startingMahlukats",
+  "startingFoods",
+  "replenishingFoods",
+];
+
+attach_config_exporter("exportConfig", predatorConfigIds, "configStatus");
+attach_config_importer("importConfig", "importConfigInput", predatorConfigIds, "configStatus");
 
 starterButton.addEventListener("click", () => {
     if(!simulation_running) {

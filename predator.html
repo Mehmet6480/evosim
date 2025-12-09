@@ -30,12 +30,24 @@
     <button id = "pauser">
         <span class = "button__text">Pause/Resume Simulation</span>
     </button>
+
+    <button id = "exportConfig">
+        <span class = "button__text">Export Config String</span>
+    </button>
+
+    <p id="configStatus" class="normal_text config-status"></p>
+
+    <label for="importConfigInput" class="normal_text">Import Config String</label>
+    <input id="importConfigInput" type="text" class="config-input" placeholder="Paste config here">
+    <button id="importConfig">
+    <span class="button__text">Import Config</span>
+    </button>
     <p class = "normal_text">Starting Parameters</p>
 
     <form class = "input_row" action = "#" >
         <div class = "input_field">
             <label for = "simulationDays">Simulation Days</label>
-            <input id = "simulationDays" type = "number" value = "2000" min = "25" max = "250000" required>
+            <input id = "simulationDays" type = "number" value = "250" min = "25" max = "250000" required>
         </div>
         <div class = "input_field">
             <label for = "startingMahlukats">Starting Mahlukats</label>

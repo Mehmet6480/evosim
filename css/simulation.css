@@ -127,17 +127,6 @@ rect{
     margin-left: 10px;
     margin-top: 10px;
 }
-.config-status{
-  min-height: 1.25em;
-}
-
-.config-status.success{
-  color: #0a662e;
-}
-
-.config-status.error{
-  color: #b00020;
-}
 button,
 .linker_button{
     text-decoration: none;
