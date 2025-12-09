@@ -192,3 +192,31 @@ h1{
     right: 15px;
     opacity: 0.6;
 }
+.control-panel{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.button-row{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.config-row{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.config-row .normal_text{
+    margin-top: 0px;
+}
+
+.config-status{
+    margin-top: 0px;
+}

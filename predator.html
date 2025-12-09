@@ -23,25 +23,31 @@
     <div class = "h1_container"></div>
     <h1>Predator-Prey Simulation</h1>
 
-    <button id = "starter">
-        <span class = button__text>Start Simulation</span>
-    </button>
+      <div class="control-panel">
+        <div class="button-row">
+            <button id = "starter">
+                <span class = button__text>Start Simulation</span>
+            </button>
 
-    <button id = "pauser">
-        <span class = "button__text">Pause/Resume Simulation</span>
-    </button>
+            <button id = "pauser">
+                <span class = "button__text">Pause/Resume Simulation</span>
+            </button>
 
-    <button id = "exportConfig">
-        <span class = "button__text">Export Config String</span>
-    </button>
+            <button id = "exportConfig">
+                <span class = "button__text">Export Config String</span>
+            </button>
 
-    <p id="configStatus" class="normal_text config-status"></p>
+            <button id="importConfig">
+                <span class="button__text">Import Config</span>
+            </button>
+        </div>
 
-    <label for="importConfigInput" class="normal_text">Import Config String</label>
-    <input id="importConfigInput" type="text" class="config-input" placeholder="Paste config here">
-    <button id="importConfig">
-    <span class="button__text">Import Config</span>
-    </button>
+        <div class="config-row">
+            <label for="importConfigInput" class="normal_text">Import Config String</label>
+            <input id="importConfigInput" type="text" class="config-input" placeholder="Paste config here">
+            <p id="configStatus" class="normal_text config-status"></p>
+        </div>
+    </div>
     <p class = "normal_text">Starting Parameters</p>
 
     <form class = "input_row" action = "#" >
